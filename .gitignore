@@ -1,3 +1,8 @@
+# General
+#----------------------------------------------
+bin/
+Testing/
+
 # Pour c++
 #----------------------------------------------
 # Prerequisites
@@ -32,6 +37,16 @@
 *.exe
 *.out
 *.app
+
+# Cmake
+*.cmake
+CMakeCache.txt
+Makefile
+CMakeFiles/
+
+# Gtest and Gmock
+*.pc
+./tests/extern/*
 
 # Pour python
 #-----------------------------------------------------
