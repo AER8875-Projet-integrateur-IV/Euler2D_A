@@ -4,11 +4,11 @@
 
 
 TEST(MeshTest, supposed_to_fail) {
-    ASSERT_THAT(0, 1); // This statement is supposed to fail to showcase a failed test
+	ASSERT_NE(0, 1);// This statement is supposed to fail to showcase a failed test
 }
 
 TEST(MeshTest, supposed_to_succed) {
-    ASSERT_THAT(1, 1); // This statement is supposed to fail to showcase a failed test
+	ASSERT_EQ(1, 1);// This statement is supposed to fail to showcase a failed test
 }
 
 
