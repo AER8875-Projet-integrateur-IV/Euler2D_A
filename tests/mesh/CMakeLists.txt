@@ -1,21 +1,10 @@
-#set(TEST_EXEC "execute_all_tests")
-
-macro(package_add_test TESTNAME)
-    # create an exectuable in which the tests will be stored
-    add_executable(${TESTNAME} ${ARGN})
-    # link the Google test infrastructure, mocking library, and a default main fuction to
-    # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} gtest gmock gtest_main)
-    # gtest_discover_tests replaces gtest_add_tests,
-    # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
-    gtest_discover_tests(${TESTNAME}
-        # set a working directory so your project root so that you can find test data via paths relative to the project root
-        WORKING_DIRECTORY ${PROJECT_DIR}
-        PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
-    )
-    set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
-endmacro()
-
-add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
-
-package_add_test(test_MeshReader test_MeshReader.cpp)
+set(TESTNAME test_MeshReader)                                 # Name for this test executable
+set(SOURCE test_MeshReader.cpp                                # List of source files to be included in the executable
+            # other cpp file
+            # and an other one! 
+            )
+set(DEPENDANCIES Mesh                                   # List of all the tests dependancies (every non standard #include )
+            # Other library
+            # Ouioui vous pouvez en mettre autant que necessaire
+            )
+package_add_test(${TESTNAME} ${SOURCE} ${DEPENDANCIES})     # Call to the macro in ./tests/CMakeLists.txt
