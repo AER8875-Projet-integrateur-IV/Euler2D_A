@@ -1,9 +1,9 @@
-#include <iostream>
-#include <string>
-#include "mesh/generator/Parser.hpp"
 #include "mesh/generator/MeshReaderSU2.hpp"
+#include "mesh/generator/Parser.hpp"
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <string>
 
 void show_usage() {
 	std::cerr << "Usage: "
@@ -15,22 +15,19 @@ void show_usage() {
 }
 
 int main(int argc, char *argv[]) {
-    
-    std::string inpath;
 
-    for (int i = 1; i < argc; i++){
-        std::string arg = argv[i];
-        if ((arg == "-h") || (arg == "--help"))
-        {
-            show_usage();
-            return 0;
-        }
-        else if ((arg == "-i") || (arg == "--input"))
-        {
-            inpath = argv[++i];
-            std::cout << "\tinput mesh path = " << inpath << std::endl;
-        }
-    }
+	std::string inpath;
+
+	for (int i = 1; i < argc; i++) {
+		std::string arg = argv[i];
+		if ((arg == "-h") || (arg == "--help")) {
+			show_usage();
+			return 0;
+		} else if ((arg == "-i") || (arg == "--input")) {
+			inpath = argv[++i];
+			std::cout << "\tinput mesh path = " << inpath << std::endl;
+		}
+	}
 
 	return 0;
 }
