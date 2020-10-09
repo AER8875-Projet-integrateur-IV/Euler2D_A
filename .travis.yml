@@ -1,16 +1,36 @@
+# Use new trusty images, should yield newer compilers and packages
+sudo: required
+dist: precise
 language: cpp
 
-compiler:
-  - g++
+matrix:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env: COMPILER=g++-5
 
-  os: linux
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-7
-
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env: COMPILER=g++-4.9
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env: COMPILER=g++-5
 # the install step will take care of deploying a newer cmake version
 install:    
   # first we create a directory for the CMake binaries
@@ -34,7 +54,6 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 before_script:
-  - export CXX=g++-7
   # switch to build directory
   - cd build
   # run cmake; here we assume that the project's
