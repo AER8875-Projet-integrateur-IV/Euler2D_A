@@ -10,8 +10,8 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-9
-      env: COMPILER=g++-9
+            - g++-7
+      env: COMPILER=g++-7
 
 
 # the install step will take care of deploying a newer cmake version
@@ -37,6 +37,7 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 before_script:
+  - g++ -v && cmake --version
   # switch to build directory
   - cd build
   # run cmake; here we assume that the project's
