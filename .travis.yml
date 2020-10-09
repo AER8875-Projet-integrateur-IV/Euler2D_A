@@ -1,7 +1,15 @@
 language: cpp
 
 compiler:
-  - g++-7
+  - g++
+
+  os: linux
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-7
 
 # the install step will take care of deploying a newer cmake version
 install:    
