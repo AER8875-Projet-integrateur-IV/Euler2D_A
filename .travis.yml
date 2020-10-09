@@ -1,7 +1,7 @@
 language: cpp
 
 compiler:
-  - gcc
+  - gcc-9.3
 
 # the install step will take care of deploying a newer cmake version
 install:    
