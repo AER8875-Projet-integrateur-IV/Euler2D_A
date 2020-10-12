@@ -17,6 +17,7 @@ connectivite et autres informations necessaires a la resolution
 #include <algorithm>
 using namespace std;
 
+
 int main() {
 	//3.-) DECLARATION DES VARIABLES
 	//Variables obtenues par le MeshReader/MeshGenerator (dans l'ordre d'apparition selon format SU2)
