@@ -17,7 +17,6 @@ connectivite et autres informations necessaires a la resolution
 #include <algorithm>
 using namespace std;
 
-
 int main() {
 	//3.-) DECLARATION DES VARIABLES
 	//Variables obtenues par le MeshReader/MeshGenerator (dans l'ordre d'apparition selon format SU2)
@@ -212,9 +211,10 @@ int main() {
 
 
 	//___________________________________________ Elements surrounding Elements____________________________________________
-	printf("_________________Debut code ESUEL________________________\n\n" );
+	printf("_________________Debut code ESUEL+FSUEL________________________\n\n" );
 	// Element 2 element start offset linked list
 	int esuelStart[NELEM+1]={0};
+	int fsuelStart[NELEM+1]={0};
 
 	// Counting the number of faces per elements
 	int nLocalFaces;
@@ -230,10 +230,16 @@ int main() {
 	for (int i=1;i<NELEM+1;++i){
 		esuelStart[i]+=esuelStart[i-1];
 	}
+	for (int i=0;i<NELEM+1;++i){
+		fsuelStart[i]=esuelStart[i];
+	}
 
 	// Initializing the element 2 element linked list to -1 using fill_n from <algorithm>
 	int esuel[esuelStart[NELEM]];
 	std::fill_n(esuel,esuelStart[NELEM],-1);
+	// Initializing the face surrounding element linked list to -1
+	int fsuel[esuelStart[NELEM]];
+	std::fill_n(fsuel,esuelStart[NELEM],-1);
 
 	// Array to save information to speedup the process
 	int nNodesForFace=2; // In 2D a face necesseraly has 2 nodes. this needs to be changed for a 3D mesh
@@ -250,6 +256,8 @@ int main() {
 	int count;
 	int pointIndex;
 	int nLocaleFacesJ;
+	int faceCount = 0;
+
 
 	// Looping over all elements in the mesh
 	for (int elemi=0;elemi<NELEM;++elemi)
@@ -311,6 +319,17 @@ int main() {
 							if (count == nNodesForFaceI){
 								//Adding elementJ to the connectivity of elementI
 								esuel[esuelStart[elemi]+faceI]=elemj;
+
+								// Checking if the face has already been added
+								if (esuel[esuelStart[elemj]+facej] == elemi){
+									fsuel[esuelStart[elemi]+faceI] = fsuel[esuelStart[elemj]+facej];
+								}
+								// Adding a new face
+								else {
+									fsuel[esuelStart[elemi]+faceI] = faceCount;
+									fsuel[esuelStart[elemj]+facej] = faceCount;
+									faceCount += 1;
+								}
 							}
 
 							}
@@ -327,6 +346,115 @@ int main() {
 		}
 	}
 
+	// Parcours de esuel pour calculer le nombre d'elements au total
+	int elemCount=NELEM;
+	int nElemTot;
+	int nGhostCells;
+
+	for (int i=0;i<esuelStart[NELEM];++i){
+		if (esuel[i] == -1){
+			esuel[i] = elemCount;
+			elemCount += 1;
+		}
+	}
+	nElemTot=elemCount;
+	nGhostCells=nElemTot-NELEM;
+
+
+	int nIntFaces= faceCount; // Nombre de faces interne
+	int nFaces; // Nombre total de nFaces
+	int nBondFaces; // Nombre de faces frontieres
+
+
+	// Parcours de fsuel pour calculer le nombre de faces au total
+
+	for (int i=0;i<esuelStart[NELEM];++i){
+		if (fsuel[i] == -1){
+			fsuel[i] = faceCount;
+			faceCount += 1;
+		}
+	}
+
+	nFaces = faceCount;
+	nBondFaces = nFaces - nIntFaces;
+
+	// Initializing the face2element connectivity
+	int face2el[2*nFaces];
+	std::fill_n(face2el,2*nFaces,-1);
+
+	int condition;
+	int condition2;
+	int condition3;
+	int compteur;
+	int i;
+	int k;
+	int indiceFace[2]={0};
+	int elemi;
+
+	for (int faceI=0;faceI<nFaces;++faceI){ //Looping over the faces
+		compteur = 0;
+		condition = 1;
+		i=0;
+		while (condition){
+			if (fsuel[i]==faceI){
+				indiceFace[compteur]=i;
+				compteur += 1;
+			}
+			if (compteur == 2 ){
+				condition = 0;
+			}
+			else if (compteur == 1 && i > fsuelStart[NELEM]){
+				indiceFace[1]=fsuelStart[NELEM];
+				condition = 0;
+			}
+			else {
+				i += 1;
+			}
+		}
+		condition2=1;
+		j=0;
+		while (condition2){
+			if (fsuelStart[j]<=indiceFace[0] && fsuelStart[j+1]>indiceFace[0]){
+				elemi=j;
+				condition2=0;
+			}
+			else{
+				j+=1;
+			}
+		}
+		condition3=1;
+		k=0;
+		while (condition3){
+			if (fsuelStart[k]<=indiceFace[1] && fsuelStart[k+1]>indiceFace[1]){
+				elemj=k;
+				condition3=0;
+			}
+			else{
+				k+=1;
+			}
+
+			if (k == NELEM){
+				elemj=-1;
+				condition3=0;
+			}
+		}
+		face2el[2*faceI+0]=elemi;
+		face2el[2*faceI+1]=elemj;
+	}
+
+	// Passage dans face2el pour mettre a jour les ghost cells
+	int countGhostcells=NELEM;
+	for (int i=0;i<2*nFaces;++i){
+		if (face2el[i]==-1){
+			face2el[i]=countGhostcells;
+			countGhostcells+=1;
+		}
+	}
+
+
+	//___________________________________________________________________________
+	// Affichage des linked lists
+
 	printf("esuelStart = \n");
 	for (int i=0;i<NELEM+1;++i){
 		printf("%2d ",esuelStart[i] );
@@ -338,3 +466,35 @@ int main() {
 		printf("%2d ",esuel[i] );
 	}
 	printf("\n\n");
+
+	printf("Nombre d'elements internes = %2d\n", NELEM);
+	printf("Nombre d'elements total = %2d\n", nElemTot);
+	printf("Nombre de cellules fantomes = %2d\n", nGhostCells);
+	printf("\n\n");
+
+	printf("fsuelStart = \n");
+	for (int i=0;i<NELEM+1;++i){
+		printf("%2d ",fsuelStart[i] );
+	}
+	printf("\n\n");
+
+	printf("fsuel = \n");
+	for (int i=0;i<esuelStart[NELEM];++i){
+		printf("%2d ",fsuel[i] );
+	}
+	printf("\n\n");
+
+	printf("Nombre de faces internes = %2d\n", nIntFaces);
+	printf("Nombre de faces  = %2d\n", nFaces);
+	printf("Nombre de faces frontieres = %2d\n", nBondFaces);
+	printf("\n\n");
+
+	printf("face2el = \n");
+	for (int i=0;i<2*nFaces;++i){
+		printf("%2d ",face2el[i] );
+	}
+	printf("\n\n");
+
+
+
+}
