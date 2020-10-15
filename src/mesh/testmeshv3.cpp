@@ -266,6 +266,7 @@ int main() {
 	int faceCount = 0;
 
 	std::vector<int> face2node;
+	std::vector<int> face2el;
 
 	// Looping over all elements in the mesh
 	for (int elemi=0;elemi<NELEM;++elemi)
@@ -336,6 +337,8 @@ int main() {
 								else {
 									fsuel[esuelStart[elemi] + faceI] = faceCount;
 									fsuel[esuelStart[elemj] + facej] = faceCount;
+									face2el.push_back (elemi);
+									face2el.push_back (elemj);
 									for (int i=0;i<nNodesForFaceI;++i){
 										face2node.push_back (lhelp[i]);
 									}
@@ -356,6 +359,7 @@ int main() {
 			}
 		}
 	}
+
 
 	printf("face2node = \n");
 	for (int i = 0; i < face2node.size(); ++i) {
@@ -396,9 +400,6 @@ int main() {
 	nBondFaces = nFaces - nIntFaces;
 
 	// Initializing the face2element connectivity
-	int face2el[2 * nFaces];
-	std::fill_n(face2el, 2 * nFaces, -1);
-
 	int condition;
 	int condition2;
 	int condition3;
@@ -408,7 +409,7 @@ int main() {
 	int indiceFace[2] = {0};
 	int elemi;
 
-	for (int faceI = 0; faceI < nFaces; ++faceI) {//Looping over the faces
+	for (int faceI = nIntFaces; faceI < nFaces; ++faceI) {//Looping over the faces
 		compteur = 0;
 		condition = 1;
 		i = 0;
@@ -420,7 +421,7 @@ int main() {
 			if (compteur == 2) {
 				condition = 0;
 			} else if (compteur == 1 && i > fsuelStart[NELEM]) {
-				indiceFace[1] = fsuelStart[NELEM];
+				indiceFace[compteur] = fsuelStart[NELEM];
 				condition = 0;
 			} else {
 				i += 1;
@@ -451,9 +452,10 @@ int main() {
 				condition3 = 0;
 			}
 		}
-		face2el[2 * faceI + 0] = elemi;
-		face2el[2 * faceI + 1] = elemj;
+		face2el.push_back (elemi);
+		face2el.push_back (elemj);
 	}
+
 
 	// Passage dans face2el pour mettre a jour les ghost cells
 	int countGhostcells = NELEM;
@@ -464,22 +466,43 @@ int main() {
 		}
 	}
 
-	// //___________________________________________________________________________
-	// // Debut code face2node
-	// int lnode[numNodes]={0};
-	//
-	// for (int faceI=0;faceI<nIntFaces;++faceI){
-	// 	elemi=face2el[2*faceI+0];
-	// 	elemj=face2el[2*faceI+1];
-	//
-	//
-	// 	for (int nodeI=0;nodeI<nNodesForFace;++nodeI){
-	//
-	// 	}
-	//
-	//
-	// }
+	// Passage dans face2node pour mettre a jour les ghost cells
+	countGhostcells = NELEM;
+	int trouve;
+	//int depasse=0;
+	for (int elemi=0;elemi<NELEM;++elemi){
+		startI=cell2nodeStart[elemi];
+		endI=cell2nodeStart[elemi+1];
+		nLocalFaces = endI - startI;
 
+		for (int faceI=0;faceI<nLocalFaces;++faceI){// En 2D, cette ligne est vraie,
+		// en 3D, ce n'est pas vrai que le nombre de noeuds dun element correspond
+		//au nombre de faces, il faut donc penser a creer, en plus de numNodeElem,
+		// un vecteur qui va stocker le nombre de faces par element!!
+		// for (int faceI=0;faceI<numFaceElem[elemi])...
+			lhelp[0]=cell2node[startI+faceI];
+			if (faceI == nLocalFaces-1){
+				lhelp[1] = cell2node[startI];
+			}
+			else {
+				lhelp[1] = cell2node[startI+faceI+1];
+			}
+			printf(" lhelp[0]= %2d\n", lhelp[0]);
+			printf(" lhelp[1]= %2d\n", lhelp[1]);
+
+			trouve=0;
+			for (int i=0;i<face2node.size()/2;++i){
+				if (face2node[i*nNodesForFace] == lhelp[0] && face2node[i*nNodesForFace+1] == lhelp[1] || face2node[i*nNodesForFace] == lhelp[1] && face2node[i*nNodesForFace+1] == lhelp[0]){
+					trouve=1;
+				}
+			}
+
+			if (!trouve){
+				face2node.push_back (lhelp[0]);
+				face2node.push_back (lhelp[1]);
+			}
+		}
+	}
 
 
 	//___________________________________________________________________________
