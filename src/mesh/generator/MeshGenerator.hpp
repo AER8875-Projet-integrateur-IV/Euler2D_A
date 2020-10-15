@@ -3,10 +3,11 @@
 
 #include "MeshReader.hpp"
 #include <string>
+#include "../Mesh.hpp"
 
 class MeshGenerator {
 protected:
-	MeshReader *Reader;
+	MeshReader* reader;
 
 	// Methods
 	void CreateNode2Element();
@@ -18,5 +19,8 @@ protected:
 	void CreateMarker();
 
 public:
-	void ConstructMesh(std::string mesh_path);
+	MeshGenerator(std::string meshPath);
+	~MeshGenerator();
+
+	Mesh BuildMesh();
 };

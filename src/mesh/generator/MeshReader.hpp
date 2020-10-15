@@ -6,8 +6,6 @@
 
 class MeshReader {
 protected:
-	std::ifstream *m_inFile;
-
 	int m_nDime;
 	int m_nNode;
 	int m_nElement;

@@ -9,7 +9,7 @@
 class MeshReaderSU2 : public MeshReader {
 protected:
 	Parser *parser = NULL;
-
+	
 	void ReadCoord();
 	void ReadConnect();
 	void ReadMarks();
