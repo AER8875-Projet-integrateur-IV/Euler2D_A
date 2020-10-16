@@ -272,6 +272,7 @@ int main() {
 	std::fill_n(face2element, numFaces * 2, -1);
 
 	// Initializing the face2node linked list to -1
+	// TODO Changer pour le 3D
 	// On doit d'abord calculer la longueur de cette liste
 	// La longueur de la liste correspond a la somme du nombre de noeuds par face
 	int longueurFace2node;
@@ -512,7 +513,7 @@ int main() {
 			}
 
 			trouve = 0;
-			for (int i = 0; i < face2node.size() / 2; ++i) {
+			for (int i = 0; i < longueurFace2node / 2; ++i) {
 				if (face2node[i * nNodesForFace] == lhelp[0] && face2node[i * nNodesForFace + 1] == lhelp[1] || face2node[i * nNodesForFace] == lhelp[1] && face2node[i * nNodesForFace + 1] == lhelp[0]) {
 					trouve = 1;
 				}
