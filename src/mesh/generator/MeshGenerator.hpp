@@ -1,13 +1,29 @@
 #pragma once
 #define MESHGENERATOR_H
 
-#include "MeshReader.hpp"
+class MeshReader;
+class MeshReaderSU2;
+class Mesh;
+
 #include <string>
-#include "../Mesh.hpp"
+#include <memory>
 
 class MeshGenerator {
+	// Creates a mesh from the MeshReader classes
 protected:
-	MeshReader* reader;
+	// attributes
+	std::unique_ptr<MeshReader> reader;
+
+	int m_nDime;
+	int m_nNode;
+	int m_nElement;
+	std::unique_ptr<double[]> m_coor;
+	std::unique_ptr<int[]> m_element2Node;
+	std::unique_ptr<int[]> m_element2NodeStart;	
+
+	std::unique_ptr<int[]> m_node2Element;
+	std::unique_ptr<int[]> m_node2ElementStart;	
+
 
 	// Methods
 	void CreateNode2Element();
