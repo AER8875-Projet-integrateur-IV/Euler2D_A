@@ -94,6 +94,9 @@ int main() {
 		printf("\n");
 	}
 
+	// Le nombre de conditions frontieres (Boundary conditions) doit etre une sortie de MeshReader
+	int numFaceBC = 11;// Dans cet exemple, il y a 11 faces avec une condition frontiere
+
 
 	//4.-) Debut du code
 	//________________________________________________________ Cell to node connectivity__________________________________________
@@ -102,20 +105,31 @@ int main() {
 	//Pour l'exemple present, numNodeElem un est vecteur de longueur 13x1 qui possede des "3" a chaque entree
 	//Le but est de sommer ce vecteur pour avoir la dimension exacte de cell2node et node2cell (esup)
 	int numNodeElem[NPOIN] = {0};
-	int sumTot = 0;
 
 	for (int i = 0; i < NPOIN; ++i) {
 		numNodeElem[i] = 3;
 	}
 
-	//Calcul de sumTot (j'ai separe le calcul de sumTot pcq normalement numNodeElem doit etre une sortie de la lecture du maillage)
+	// Meme principe pour le nombre de faces pour chaque element
+	int numFaceElem[NPOIN] = {0};
+
 	for (int i = 0; i < NPOIN; ++i) {
-		sumTot += numNodeElem[i];
+		numFaceElem[i] = 3;
 	}
 
+	//Calcul de sumTot (j'ai separe le calcul de sumTot pcq normalement numNodeElem doit etre une sortie de la lecture du maillage)
+	int sumTot = 0;
+	for (int i = 0; i < NPOIN; ++i) {
+		sumTot += numFaceElem[i];//Somme du nombre de faces/noeuds dans un maillage 2D, en comptant 2 fois les faces internes.
+	}
+
+	// A partir de sumTot et numFaceBC, il est possible de calculer le nombre de faces au total dans le maillage (sans double comptage)
+	int numFaces = (sumTot + numFaceBC) / 2;
+
+
+	// Initializing the cell2node linked list to 0
 	int cell2nodeStart[NPOIN + 1] = {0};
 	int cell2node[sumTot] = {0};
-
 
 	for (int i = 0; i < NELEM; ++i) {
 		cell2nodeStart[i + 1] = cell2nodeStart[i] + numNodeElem[i];
@@ -123,13 +137,17 @@ int main() {
 			cell2node[cell2nodeStart[i] + j] = CONNEC[i][j];
 		}
 	}
+
+	// Calcul du nombre de noeuds total dans le maillage
 	int numNodes = 0;
 	for (int i = 0; i < cell2nodeStart[NPOIN]; ++i) {
 		if (cell2node[i] + 1 > numNodes) {
 			numNodes = cell2node[i] + 1;
 		}
 	}
-	printf("numNodes = %2d\n\n", numNodes);
+	printf("numNodes = %2d\n\n", numNodes);//Je ne sais pas si c'est utile
+
+	// Affichage cell2node
 
 	printf("Les linked lists pour la connectivite Elements a Noeuds sont les suivantes\n\n");
 	printf("cell2nodeStart = \n");
@@ -244,9 +262,28 @@ int main() {
 	// Initializing the element 2 element linked list to -1 using fill_n from <algorithm>
 	int esuel[esuelStart[NELEM]];
 	std::fill_n(esuel, esuelStart[NELEM], -1);
+
 	// Initializing the face surrounding element linked list to -1
 	int fsuel[esuelStart[NELEM]];
 	std::fill_n(fsuel, esuelStart[NELEM], -1);
+
+	// Initializing the face2element linked list to -1
+	int face2element[numFaces * 2];
+	std::fill_n(face2element, numFaces * 2, -1);
+
+	// Initializing the face2node linked list to -1
+	// On doit d'abord calculer la longueur de cette liste
+	// La longueur de la liste correspond a la somme du nombre de noeuds par face
+	int longueurFace2node;
+	// Dans l'exemple presente dans le manuel, le nombre de noeuds par face est 2 pour chacune des faces (le cas pour tous les maillages 2D)
+	int numNodePerFace[numFaces];// Idealement cet array est une sortie de MeshReader
+	for (int i = 0; i < numFaces; ++i) {
+		numNodePerFace[i] = 2;
+		longueurFace2node += numNodePerFace[i];
+	}
+	// Initializing the face2node linked list to
+	int face2node[longueurFace2node];
+
 
 	// Array to save information to speedup the process
 	int nNodesForFace = 2;// In 2D a face necesseraly has 2 nodes. this needs to be changed for a 3D mesh
@@ -264,9 +301,7 @@ int main() {
 	int pointIndex;
 	int nLocaleFacesJ;
 	int faceCount = 0;
-
-	std::vector<int> face2node;
-	std::vector<int> face2el;
+	int nodeCount = 0;
 
 	// Looping over all elements in the mesh
 	for (int elemi = 0; elemi < NELEM; ++elemi) {
@@ -334,10 +369,11 @@ int main() {
 									else {
 										fsuel[esuelStart[elemi] + faceI] = faceCount;
 										fsuel[esuelStart[elemj] + facej] = faceCount;
-										face2el.push_back(elemi);
-										face2el.push_back(elemj);
+										face2element[2 * faceCount + 0] = elemi;
+										face2element[2 * faceCount + 1] = elemj;
 										for (int i = 0; i < nNodesForFaceI; ++i) {
-											face2node.push_back(lhelp[i]);
+											face2node[nodeCount] = lhelp[i];
+											nodeCount += 1;
 										}
 										faceCount += 1;
 									}
@@ -353,6 +389,7 @@ int main() {
 			}
 		}
 	}
+
 
 	// Parcours de esuel pour calculer le nombre d'elements au total
 	int elemCount = NELEM;
@@ -370,7 +407,7 @@ int main() {
 
 
 	int nIntFaces = faceCount;// Nombre de faces interne
-	int nFaces;               // Nombre total de nFaces
+	int nFaces;               // Nombre total de nFaces (sans double counting)
 	int nBondFaces;           // Nombre de faces frontieres
 
 
@@ -439,16 +476,16 @@ int main() {
 				condition3 = 0;
 			}
 		}
-		face2el.push_back(elemi);
-		face2el.push_back(elemj);
+		face2element[2 * faceI + 0] = elemi;
+		face2element[2 * faceI + 1] = elemj;
 	}
 
 
-	// Passage dans face2el pour mettre a jour les ghost cells
+	// Passage dans face2element pour mettre a jour les ghost cells
 	int countGhostcells = NELEM;
 	for (int i = 0; i < 2 * nFaces; ++i) {
-		if (face2el[i] == -1) {
-			face2el[i] = countGhostcells;
+		if (face2element[i] == -1) {
+			face2element[i] = countGhostcells;
 			countGhostcells += 1;
 		}
 	}
@@ -482,8 +519,9 @@ int main() {
 			}
 
 			if (!trouve) {
-				face2node.push_back(lhelp[0]);
-				face2node.push_back(lhelp[1]);
+				face2node[nodeCount] = lhelp[0];
+				face2node[nodeCount + 1] = lhelp[1];
+				nodeCount += 2;
 			}
 		}
 	}
@@ -526,14 +564,14 @@ int main() {
 	printf("Nombre de faces frontieres = %2d\n", nBondFaces);
 	printf("\n\n");
 
-	printf("face2el = \n");
+	printf("face2element = \n");
 	for (int i = 0; i < 2 * nFaces; ++i) {
-		printf("%2d ", face2el[i]);
+		printf("%2d ", face2element[i]);
 	}
 	printf("\n\n");
 
 	printf("face2node = \n");
-	for (int i = 0; i < 2 * nFaces; ++i) {
+	for (int i = 0; i < longueurFace2node; ++i) {
 		printf("%2d ", face2node[i]);
 	}
 	printf("\n\n");

@@ -123,10 +123,10 @@ int main() {
 			cell2node[cell2nodeStart[i]+j]=CONNEC[i][j];
 		}
 	}
-	int numNodes=0;
-	for (int i=0;i<cell2nodeStart[NPOIN];++i){
-		if (cell2node[i]+1>numNodes){
-			numNodes=cell2node[i]+1;
+	int numNodes = 0;
+	for (int i = 0; i < cell2nodeStart[NPOIN]; ++i) {
+		if (cell2node[i] + 1 > numNodes) {
+			numNodes = cell2node[i] + 1;
 		}
 	}
 	printf("numNodes = %2d\n", numNodes);
@@ -311,7 +311,7 @@ int main() {
 
 					// Looping over the faces of elementJ
 					for (int facej=0;facej<nLocaleFacesJ;++facej){
-						nNodesForFaceJ = 2; // Dont forget to change to an array in 3D! nNodesforFace[elemj]
+						nNodesForFaceJ = 2;// Dont forget to change to an array in 3D! nNodesforFace[elemj]
 
 						if (nNodesForFaceI == nNodesForFaceJ){
 							count = 0;
@@ -336,8 +336,8 @@ int main() {
 								else {
 									fsuel[esuelStart[elemi] + faceI] = faceCount;
 									fsuel[esuelStart[elemj] + facej] = faceCount;
-									for (int i=0;i<nNodesForFaceI;++i){
-										face2node.push_back (lhelp[i]);
+									for (int i = 0; i < nNodesForFaceI; ++i) {
+										face2node.push_back(lhelp[i]);
 									}
 									faceCount += 1;
 								}
@@ -479,7 +479,6 @@ int main() {
 	//
 	//
 	// }
-
 
 
 	//___________________________________________________________________________
