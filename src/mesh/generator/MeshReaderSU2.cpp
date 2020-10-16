@@ -1,5 +1,6 @@
 #include "MeshReaderSU2.hpp"
 #include "Parser.hpp"
+#include "../../utils/logger/Logger.cpp"
 
 #include <fstream>
 #include <iostream>
@@ -11,21 +12,23 @@
 #include <string>
 
 MeshReaderSU2::MeshReaderSU2(std::string meshPath) {
-	parser = new Parser(meshPath);
+	parser = std::unique_ptr<Parser>(new Parser(meshPath));
 }
 
 void MeshReaderSU2::ReadFile() {
+	std::string message;
+
 	m_nDime = parser->ExtractNextInt();
-	std::cout << "number of dimensions = " << m_nDime << std::endl;
+	message = ("number of dimensions in the mesh= "+ std::to_string(m_nDime));
+	Logger::getInstance()->AddLog(message,1);
 
 	m_nNode = parser->ExtractNextInt();
-	std::cout << "number of points = " << m_nNode << std::endl;
+	Logger::getInstance()->AddLog("number of points in the mesh= " + std::to_string(m_nNode),1);
 
 	MeshReaderSU2::ReadCoord();
 
 	m_nElement = parser->ExtractNextInt();
-	std::cout << "number of elements = " << m_nElement << std::endl;
-
+	Logger::getInstance()->AddLog("number of elements in the mesh= " + std::to_string(m_nElement),1);
 
 	MeshReaderSU2::ReadConnect();
 
@@ -104,12 +107,13 @@ void MeshReaderSU2::ReadConnect() {
 
 	// Filling of the connectivity matrix
 	m_element2Node = std::make_unique<int[]>(element2NodeSize);
-	m_element2NodeStart = std::make_unique<int[]>(m_nElement);
+	m_element2NodeStart = std::make_unique<int[]>(m_nElement+1);
 
 	int element2NodeCurrentStart = 0;
 
+	m_element2NodeStart[0] = 0;
 	for (int ielem = 0; ielem < m_nElement; ielem++) {
-		m_element2NodeStart[ielem] = element2NodeCurrentStart;
+		
 
 		val = parser->ExtractNextInt();
 		nNode = MeshReaderSU2::VtkElem2NNode(val);
@@ -119,6 +123,7 @@ void MeshReaderSU2::ReadConnect() {
 			m_element2Node[element2NodeCurrentStart] = val;
 			element2NodeCurrentStart++;
 		}
+		m_element2NodeStart[ielem+1] = element2NodeCurrentStart;
 	}
 }
 

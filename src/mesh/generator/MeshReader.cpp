@@ -1,6 +1,11 @@
 #include "MeshReader.hpp"
 #include <memory>
 
+
+void MeshReader::ReadFile(){
+
+}
+
 void MeshReader::get_values(int *nDime, int *nNode, int *nElement, std::unique_ptr<double[]> *coor, std::unique_ptr<int[]> *element2Node, std::unique_ptr<int[]> *element2NodeStart) {
 	*nDime = m_nDime;
 	*nNode = m_nNode;
