@@ -55,8 +55,9 @@ TEST_F(MeshReaderSU2TEST, ReadFile) {
 	                                     12,
 	                                     15,
 	                                     18,
-	                                     21};
-	std::vector<int> element2NodeStart_v(element2NodeStart.get(), element2NodeStart.get() + nElement);
+	                                     21,
+										 24};
+	std::vector<int> element2NodeStart_v(element2NodeStart.get(), element2NodeStart.get() + nElement+1);
 	ASSERT_THAT(element2NodeStart_v, testing::ElementsAreArray(element2NodeStart_exp));
 
 
