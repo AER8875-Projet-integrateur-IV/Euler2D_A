@@ -26,6 +26,10 @@ Mesh MeshGenerator::BuildMesh(){
 	this->SolveFaceConnectivity();
 	this->SolveFace2Element();
 	this->SolveFace2Node();
+
+	Mesh mesh(&m_nDime, &m_nNode, &m_nElement, &m_nFace, &m_nFaceInt,
+	          &m_coor, &m_face2Element, &m_face2Node);
+	return mesh;
 }
 
 void MeshGenerator::SolveNode2ElementStart(){

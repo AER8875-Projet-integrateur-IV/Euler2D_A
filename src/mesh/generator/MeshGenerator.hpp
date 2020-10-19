@@ -3,10 +3,10 @@
 
 class MeshReader;
 class MeshReaderSU2;
-class Mesh;
 
-#include <string>
+#include "../Mesh.hpp"
 #include <memory>
+#include <string>
 
 class MeshGenerator {
 	// Creates a mesh from the MeshReader classes
