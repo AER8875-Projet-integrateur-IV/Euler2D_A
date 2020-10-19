@@ -5,17 +5,20 @@
 #include <memory>
 #include <regex>
 #include <string>
+#include <sstream>
 
 class Parser
 // Extract data from a mesh text file word by word
 // a word is defined as a group of characters surrounded by whitespace
 {
 protected:
+	std::string m_commentString; // This string indicates the start of a comment
+
 public:
 	std::ifstream m_inFile;
 
 	//Parser();
-	Parser(std::string meshPath);
+	Parser(std::string meshPath, std::string commentString);
 	//Parser() = default;
 	~Parser();
 

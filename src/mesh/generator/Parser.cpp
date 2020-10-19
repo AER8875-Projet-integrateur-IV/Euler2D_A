@@ -5,7 +5,9 @@
 #include <regex>
 #include <string>
 
-Parser::Parser(std::string meshPath) {
+Parser::Parser(std::string meshPath, std::string commentString) {
+	m_commentString = commentString;
+
 	m_inFile.open(meshPath, std::ifstream::in);
 	if (!m_inFile) {
 		std::cout << "Can't open input file " << meshPath << std::endl;
@@ -44,8 +46,19 @@ std::string Parser::GetNextNonNullLine() {
 
 std::string Parser::GetNextWord() {
 	std::string word;
-	m_inFile >> word;
-	//std::cout << word << std::endl;
+	int filePosition;
+	while (1)
+	{
+		filePosition = m_inFile.tellg();
+		m_inFile >> word;
+		if (word.rfind(m_commentString, 0) == 0) {
+			m_inFile.seekg(filePosition);
+			this->GetNextNonNullLine();
+		} else{
+			break;
+		}
+	}
+	
 	return word;
 }
 

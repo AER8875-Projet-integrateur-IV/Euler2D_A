@@ -10,9 +10,10 @@
 #include <sstream>
 #include <sstream>// std::stringstream
 #include <string>
+#include <stdexcept>
 
 MeshReaderSU2::MeshReaderSU2(std::string meshPath) {
-	parser = std::unique_ptr<Parser>(new Parser(meshPath));
+	parser = std::unique_ptr<Parser>(new Parser(meshPath, "%"));
 }
 
 void MeshReaderSU2::ReadFile() {
@@ -22,18 +23,30 @@ void MeshReaderSU2::ReadFile() {
 	message = ("number of dimensions in the mesh= "+ std::to_string(m_nDime));
 	Logger::getInstance()->AddLog(message,1);
 
-	m_nNode = parser->ExtractNextInt();
-	Logger::getInstance()->AddLog("number of points in the mesh= " + std::to_string(m_nNode),1);
+	std::string word;
+	for (int i=0;i<3;i++){
+		word = parser->GetNextWord();
+		if (word == "NELEM="){
+			m_nElement = parser->ExtractNextInt();
+			Logger::getInstance()->AddLog("number of elements in the mesh= " + std::to_string(m_nElement),1);
 
-	MeshReaderSU2::ReadCoord();
+			MeshReaderSU2::ReadConnect();
+		} else if (word == "NPOIN=")
+		{
+			m_nNode = parser->ExtractNextInt();
+			Logger::getInstance()->AddLog("number of points in the mesh= " + std::to_string(m_nNode),1);
 
-	m_nElement = parser->ExtractNextInt();
-	Logger::getInstance()->AddLog("number of elements in the mesh= " + std::to_string(m_nElement),1);
-
-	MeshReaderSU2::ReadConnect();
-
-	// MeshReaderSU2::Read_marks();
-	// std::cout << "finished marks" << std::endl;
+			MeshReaderSU2::ReadCoord();
+		} else if (word == "NMARK=")
+		{
+			this->ReadMarks();
+		} else
+		{
+			throw std::invalid_argument("SU2 file has an invalid command");
+		}
+		
+		
+	}
 }
 
 void MeshReaderSU2::ReadCoord() {
@@ -49,6 +62,8 @@ void MeshReaderSU2::ReadCoord() {
 			m_coor[inode * m_nDime + idim] = val;
 			//std::cout << val << std::endl;
 		}
+		parser->m_inFile.unget();
+		parser->GetNextNonNullLine();
 	}
 }
 
@@ -97,10 +112,9 @@ void MeshReaderSU2::ReadConnect() {
 	for (int ielem = 0; ielem < m_nElement; ielem++) {
 		val = parser->ExtractNextInt();
 		nNode = MeshReaderSU2::VtkElem2NNode(val);
-		for (int inode = 0; inode < nNode; inode++) {
-			parser->GetNextWord();
-			element2NodeSize++;
-		}
+		element2NodeSize += nNode;
+		parser->m_inFile.unget();
+		parser->GetNextNonNullLine();
 	}
 	parser->m_inFile.seekg(filePosition);
 
@@ -123,6 +137,8 @@ void MeshReaderSU2::ReadConnect() {
 			m_element2Node[element2NodeCurrentStart] = val;
 			element2NodeCurrentStart++;
 		}
+		parser->m_inFile.unget();
+		parser->GetNextNonNullLine();
 		m_element2NodeStart[ielem+1] = element2NodeCurrentStart;
 	}
 }

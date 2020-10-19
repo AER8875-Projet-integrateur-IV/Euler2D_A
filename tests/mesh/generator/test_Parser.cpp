@@ -5,7 +5,7 @@
 
 class ParserTEST : public ::testing::Test {
 protected:
-	Parser parser = Parser("../../../../tests/mesh/generator/square.su2");
+	Parser parser = Parser("../../../../tests/mesh/generator/square.su2", "%");
 };
 
 TEST_F(ParserTEST, GetNextWord) {
