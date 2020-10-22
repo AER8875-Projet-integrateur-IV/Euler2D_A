@@ -1,8 +1,48 @@
+#include "mesh/generator/MeshReader.hpp"
+#include "mesh/generator/MeshReaderSU2.hpp"
+#include "mesh/generator/Parser.hpp"
+#include "mesh/generator/MeshGenerator.hpp"
+#include "mesh/Mesh.hpp"
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <string>
+#include "utils/logger/Logger.hpp"
 
-int main(int argc, char* argv[])
-{
-    std::cout << "main is running" << std::endl;
-    
-    return 0;
+void show_usage() {
+	std::cerr << "Usage: "
+	          << "Options:\n"
+	          << "\t-h,--help\t\tShow this help message\n"
+	          << "\t-i,--input\tSpecify the file path for the SU2 path\n"
+			  << "\t-v,--verbose\tOutput debugging information\n"
+			  << "\t-vv,--veryverbose\tOutput EVERYTHING !?!?!?!?\n"
+	          << std::endl;
+}
+
+int main(int argc, char *argv[]) {
+
+	std::cout << "Main is running" << std::endl;
+
+	std::string inpath;
+	for (int i = 1; i < argc; i++) {
+		std::string arg = argv[i];
+		if ((arg == "-h") || (arg == "--help")) {
+			show_usage();
+			return 0;
+		} else if ((arg == "-i") || (arg == "--input")) {
+			inpath = argv[++i];
+			Logger::getInstance()->AddLog("input mesh path = " + inpath,0);
+		} else if ((arg == "-v") || (arg == "--verbose")) {
+			argv[++i];
+			Logger::getInstance()->SetVerbosity(1);
+		} else if ((arg == "-vv") || (arg == "--veryverbose")) {
+			argv[++i];
+			Logger::getInstance()->SetVerbosity(2);
+		}
+	}
+
+	MeshGenerator generator(inpath);
+	Mesh mesh = generator.BuildMesh();
+
+	return 0;
 }
