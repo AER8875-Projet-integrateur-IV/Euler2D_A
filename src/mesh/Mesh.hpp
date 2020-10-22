@@ -15,7 +15,7 @@ protected:
 	std::unique_ptr<double[]> m_coor;
 
 	std::unique_ptr<int[]> m_element2Face;
-	// m_element2FaceStart = m_element2Face;
+	std::unique_ptr<int[]> m_element2FaceStart;
 
 	std::unique_ptr<int[]> m_face2Element;
 	std::unique_ptr<int[]> m_face2Node;

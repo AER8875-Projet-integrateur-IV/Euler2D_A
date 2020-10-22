@@ -3,6 +3,7 @@
 #include "../Mesh.hpp"
 #include "../../utils/logger/Logger.hpp"
 #include "../MarkerContainer.hpp"
+#include <cmath>
 
 MeshGenerator::MeshGenerator(){
     
@@ -30,6 +31,8 @@ Mesh MeshGenerator::BuildMesh(){
 	this->SolveFaceConnectivity();
 	this->SolveFace2Element();
 	this->SolveFace2Node();
+
+	this->SolveVolume();
 
 	Mesh mesh(&m_nDime, &m_nNode, &m_nElement, &m_nFace, &m_nFaceInt,
 	          &m_coor, &m_face2Element, &m_face2Node);
@@ -402,4 +405,145 @@ void MeshGenerator::SolveFace2Node(){
 			}
 		}
 	}
+}
+
+void MeshGenerator::SolveVolume(){
+	// Volume fonctionne seulement pour 2D
+	int indexStart;
+	int indexEnd;
+	int numberOfNode;
+
+	int node1;
+	int node2;
+	int node3;
+	int node4;
+
+	double x1, x2, x3 , x4, y1, y2, y3, y4;
+
+	double volume;
+
+	m_element2Volume = std::unique_ptr<double[]>(new double[m_nElement]);
+	for(int iElement = 0; iElement<m_nElement; iElement++){
+		indexStart =	m_element2NodeStart[iElement];
+		indexEnd =	m_element2NodeStart[iElement+1];
+		numberOfNode = indexEnd-indexStart;
+		
+		node1 = m_element2Node[indexStart];
+		node2 = m_element2Node[indexStart+1];
+		node3 = m_element2Node[indexStart+2];
+
+		x1 = m_coor[node1 * m_nDime + 0];
+		x2 = m_coor[node2 * m_nDime + 0];
+		x3 = m_coor[node3 * m_nDime + 0];
+
+		y1 = m_coor[node1 * m_nDime + 1];
+		y2 = m_coor[node2 * m_nDime + 1];
+		y3 = m_coor[node3 * m_nDime + 1];		
+		
+		if (numberOfNode==3){
+			volume = this->GetTriangleVolume(x1,x2,x3,y1,y2,y3);
+		} else{
+			node4 = m_element2Node[indexStart+3];
+			x4 = m_coor[node4 * m_nDime + 0];
+			y4 = m_coor[node4 * m_nDime + 1];
+
+			volume = 0.5*((x1-x3)*(y2-y4)+(x4-x2)*(y1-y3));
+		}
+		m_element2Volume[iElement] = volume;
+	}
+}
+
+void MeshGenerator::SolveFaceVector(){
+	m_face2FaceVector = std::unique_ptr<double[]>(new double[m_nDime*m_nFace]);
+	m_face2Normal = std::unique_ptr<double[]>(new double[m_nDime*m_nFace]);
+	m_face2Area = std::unique_ptr<double[]>(new double[m_nFace]);
+
+	int node1, node2;
+
+	double x1,x2,y1,y2,area;
+
+	for(int iFace = 0; iFace<m_nFace; iFace++){
+		node1 = m_face2Node[iFace*m_nDime+0];
+		node2 = m_face2Node[iFace*m_nDime+1];
+
+		x1 = m_coor[node1 * m_nDime + 0];
+		x2 = m_coor[node2 * m_nDime + 0];
+
+		y1 = m_coor[node1 * m_nDime + 1];
+		y2 = m_coor[node2 * m_nDime + 1];
+
+		m_face2FaceVector[iFace*m_nDime+0] = y2-y1;
+		m_face2FaceVector[iFace*m_nDime+1] = x1-x2;
+
+		area = pow((pow((x2-x1),2.0)+pow((y2-y1),2.0)),0.5);
+		m_face2Area[iFace] = area;
+
+		m_face2Normal[iFace*m_nDime+0] = (y2-y1)/area;
+		m_face2Normal[iFace*m_nDime+1] = (x1-x2)/area;
+	}
+}
+
+void MeshGenerator::SolveElement2Center(){
+	// Volume fonctionne seulement pour 2D
+	int indexStart;
+	int indexEnd;
+	int numberOfNode;
+
+	int node1;
+	int node2;
+	int node3;
+	int node4;
+
+	double x1, x2, x3 , x4, y1, y2, y3, y4;
+
+	double vol1,  vol2;
+
+	double* center, center1, center2;
+
+	m_element2Center = std::unique_ptr<double[]>(new double[m_nDime*m_nFace]);
+	for(int iElement = 0; iElement<m_nElement; iElement++){
+		indexStart =	m_element2NodeStart[iElement];
+		indexEnd =	m_element2NodeStart[iElement+1];
+		numberOfNode = indexEnd-indexStart;
+		
+		node1 = m_element2Node[indexStart];
+		node2 = m_element2Node[indexStart+1];
+		node3 = m_element2Node[indexStart+2];
+
+		x1 = m_coor[node1 * m_nDime + 0];
+		x2 = m_coor[node2 * m_nDime + 0];
+		x3 = m_coor[node3 * m_nDime + 0];
+
+		y1 = m_coor[node1 * m_nDime + 1];
+		y2 = m_coor[node2 * m_nDime + 1];
+		y3 = m_coor[node3 * m_nDime + 1];		
+		if (numberOfNode==3){
+			center = this->GetTriangleCenter(x1,x2,x3,y1,y2,y3);
+
+		} else{
+			node4 = m_element2Node[indexStart+3];
+			x4 = m_coor[node4 * m_nDime + 0];
+			y4 = m_coor[node4 * m_nDime + 1];
+
+			center1 = this->GetTriangleCenter(x1,x2,x3,y1,y2,y3);
+			center2 = this->GetTriangleCenter(x1,x3,x4,y1,y3,y4);
+			vol1 = this->GetTriangleVolume(x1,x2,x3,y1,y2,y3);
+			vol2 = this->GetTriangleVolume(x1,x3,x4,y1,y3,y4);
+
+			center[0]
+		}
+		m_element2Volume[iElement] = volume;
+	}
+}
+
+double* MeshGenerator::GetTriangleCenter(double x1, double x2, double x3, double y1, double y2, double y3){
+	double* center;
+	center = new double[2];
+	center[0] = (x1+x2+x3)/3;
+	center[1] = (y1+y2+y3)/3;
+	return center;
+}
+
+double MeshGenerator::GetTriangleVolume(double x1, double x2, double x3, double y1, double y2, double y3){
+	return 0.5*((x1-x2)*(y1+y2)+(x2-x3)*(y2+y3)+(x3-x1)*(y3+y1));
 }

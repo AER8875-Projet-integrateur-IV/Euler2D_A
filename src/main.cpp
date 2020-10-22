@@ -44,5 +44,8 @@ int main(int argc, char *argv[]) {
 	MeshGenerator generator(inpath);
 	Mesh mesh = generator.BuildMesh();
 
+	delete &generator;
+	delete &mesh;
+	
 	return 0;
 }

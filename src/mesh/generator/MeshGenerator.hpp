@@ -23,8 +23,6 @@ protected:
 	std::unique_ptr<MeshReader> reader;
 
 	// connectivity attributes
-	Mesh* mesh;
-	
 	int m_nDime;
 	int m_nNode;
 	int m_nElement;
@@ -47,6 +45,14 @@ protected:
 	std::unique_ptr<int[]> m_face2Element;
 	std::unique_ptr<int[]> m_face2Node;
 
+	// Metrics attributes
+	std::unique_ptr<double[]> m_element2Volume;
+	std::unique_ptr<double[]> m_face2FaceVector;
+	std::unique_ptr<double[]> m_face2Normal;
+	std::unique_ptr<double[]> m_face2Area;
+	std::unique_ptr<double[]> m_element2Center;
+	
+
 	// Methods
 	void SolveNode2ElementStart();
 	void SolveNode2Element();
@@ -59,7 +65,9 @@ protected:
 	void SolveFace2Element();
 	void SolveFace2Node();
 	
-
+	void SolveVolume();
+	void SolveFaceVector();
+	void SolveElement2Center();
 public:
 	MeshGenerator();
 	MeshGenerator(std::string meshPath);
