@@ -6,7 +6,6 @@
 #include <cmath>
 
 MeshGenerator::MeshGenerator(){
-    
 }
 
 MeshGenerator::MeshGenerator(std::string meshPath){
@@ -41,8 +40,8 @@ Mesh MeshGenerator::BuildMesh(){
 
 void MeshGenerator::SolveNode2ElementStart(){
 	int startI;
-	int endI;	
-    int nodeI;
+	int endI;
+	int nodeI;
 	int j;
 
     m_node2ElementStart = std::unique_ptr<int[]>(new int[m_nNode+1] ());
@@ -57,7 +56,7 @@ void MeshGenerator::SolveNode2ElementStart(){
 			nodeI = m_element2Node[i];
 			m_node2ElementStart[nodeI+1] += 1;
 		}
-	}    
+	}
 
 
 	// Setting up the start offset linked list
@@ -68,13 +67,13 @@ void MeshGenerator::SolveNode2ElementStart(){
 
 void MeshGenerator::SolveNode2Element(){
 	int startI;
-	int endI;	
-    int nodeI;
+	int endI;
+	int nodeI;
 	int j;
 
 	// Initializing the node to element linked list connectivity
 	m_node2Element = std::unique_ptr<int[]>(new int[m_element2NodeStart[m_nElement]]());
-	
+
 	// Array to save the increment
 	int store[m_nNode]={0};
 
@@ -122,7 +121,7 @@ void MeshGenerator::CountFaces(){
 	int sumTot = m_element2NodeStart[m_nElement];
 
 	// A partir de sumTot et numFaceBC, il est possible de calculer le nombre de faces au total dans le maillage (sans double comptage)
-	m_nFace = (sumTot + numFaceBC) / 2;	
+	m_nFace = (sumTot + numFaceBC) / 2;
 }
 
 void MeshGenerator::SolveFaceConnectivity(){
@@ -427,7 +426,7 @@ void MeshGenerator::SolveVolume(){
 		indexStart =	m_element2NodeStart[iElement];
 		indexEnd =	m_element2NodeStart[iElement+1];
 		numberOfNode = indexEnd-indexStart;
-		
+
 		node1 = m_element2Node[indexStart];
 		node2 = m_element2Node[indexStart+1];
 		node3 = m_element2Node[indexStart+2];
@@ -438,8 +437,8 @@ void MeshGenerator::SolveVolume(){
 
 		y1 = m_coor[node1 * m_nDime + 1];
 		y2 = m_coor[node2 * m_nDime + 1];
-		y3 = m_coor[node3 * m_nDime + 1];		
-		
+		y3 = m_coor[node3 * m_nDime + 1];
+
 		if (numberOfNode==3){
 			volume = this->GetTriangleVolume(x1,x2,x3,y1,y2,y3);
 		} else{
@@ -498,14 +497,16 @@ void MeshGenerator::SolveElement2Center(){
 
 	double vol1,  vol2;
 
-	double* center, center1, center2;
+	double *center;
+	double *center1;
+	double *center2;
 
 	m_element2Center = std::unique_ptr<double[]>(new double[m_nDime*m_nFace]);
 	for(int iElement = 0; iElement<m_nElement; iElement++){
 		indexStart =	m_element2NodeStart[iElement];
 		indexEnd =	m_element2NodeStart[iElement+1];
 		numberOfNode = indexEnd-indexStart;
-		
+
 		node1 = m_element2Node[indexStart];
 		node2 = m_element2Node[indexStart+1];
 		node3 = m_element2Node[indexStart+2];
@@ -516,7 +517,7 @@ void MeshGenerator::SolveElement2Center(){
 
 		y1 = m_coor[node1 * m_nDime + 1];
 		y2 = m_coor[node2 * m_nDime + 1];
-		y3 = m_coor[node3 * m_nDime + 1];		
+		y3 = m_coor[node3 * m_nDime + 1];
 		if (numberOfNode==3){
 			center = this->GetTriangleCenter(x1,x2,x3,y1,y2,y3);
 
@@ -530,9 +531,11 @@ void MeshGenerator::SolveElement2Center(){
 			vol1 = this->GetTriangleVolume(x1,x2,x3,y1,y2,y3);
 			vol2 = this->GetTriangleVolume(x1,x3,x4,y1,y3,y4);
 
-			center[0]
+			center[0] = vol1 * center1[0] + vol2 * center2[0] * vol1 + vol2;
+			center[1] = vol1 * center1[1] + vol2 * center2[1] * vol1 + vol2;
 		}
-		m_element2Volume[iElement] = volume;
+		m_element2Center[iElement * m_nDime + 0] = center[0];
+		m_element2Center[iElement * m_nDime + 1] = center[1];
 	}
 }
 
