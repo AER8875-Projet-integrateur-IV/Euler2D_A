@@ -15,3 +15,7 @@ void MeshReader::get_values(int *nDime, int *nNode, int *nElement, std::unique_p
 	swap(*element2Node, m_element2Node);
 	swap(*element2NodeStart, m_element2NodeStart);
 }
+
+void MeshReader::get_markers(std::unique_ptr<MarkerContainer>* markers) {
+	swap(*markers, m_markers);
+}

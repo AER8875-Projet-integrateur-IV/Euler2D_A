@@ -1,4 +1,5 @@
 #include "../../../src/mesh/generator/MeshGenerator.hpp"
+#include "../../../src/mesh/MarkerContainer.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -27,6 +28,9 @@ public:
     }
     void Setelement2NodeStart(std::unique_ptr<int[]> element2NodeStart){
         swap(this->m_element2NodeStart, element2NodeStart); 
+    }
+    void Setmarkers(std::unique_ptr<MarkerContainer>* markers){
+        swap(this->m_markers, *markers); 
     }
 
     // get private attributes
@@ -138,9 +142,10 @@ TEST_F(MeshGenerator2SquareTEST, SolveNode2Element) {
 
 
 // ----------- MeshGeneratorManualTEST----------------
-
 class MeshGeneratorManualTEST : public ::testing::Test {
     // Example taken from:
+    // Applied Computational Fluid Dynamics Techniques: An Introduction Based on Finite Element Methods, Second Edition.
+    // Rainald Löhner © 2008 John Wiley & Sons, Ltd. ISBN: 978-0-470-51907-3
 protected:
     WrapperMeshGenerator generator;
 
@@ -162,6 +167,14 @@ protected:
             element2NodeStart[i] = element2NodeStart_val[i]; 
         }        
         
+        std::unique_ptr<MarkerContainer> markers = std::unique_ptr<MarkerContainer>(new MarkerContainer(1));
+        std::string tag = "testtag";
+        int nElement = 11;
+        std::unique_ptr<int[]> marker_element2Node;
+        std::unique_ptr<int[]> marker_element2NodeStart;
+        markers->AddMarker(&tag,&nElement,&marker_element2Node,&marker_element2NodeStart);
+        generator.Setmarkers(&markers);
+
         generator.Setelement2Node(element2Node);
         generator.Setelement2NodeStart(std::unique_ptr<int[]>(element2NodeStart));
 	}

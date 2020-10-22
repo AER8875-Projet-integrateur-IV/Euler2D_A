@@ -2,6 +2,7 @@
 #include "MeshReaderSU2.hpp"
 #include "../Mesh.hpp"
 #include "../../utils/logger/Logger.hpp"
+#include "../MarkerContainer.hpp"
 
 MeshGenerator::MeshGenerator(){
     
@@ -19,6 +20,9 @@ Mesh MeshGenerator::BuildMesh(){
     // Read values from input file
     reader->ReadFile();
     reader->get_values(&m_nDime, &m_nNode, &m_nElement, &m_coor, &m_element2Node, &m_element2NodeStart);
+	reader->get_markers(&m_markers);
+
+	this->CountFaces();
 
 	this->SolveNode2ElementStart();
 	this->SolveNode2Element();
@@ -111,7 +115,7 @@ void MeshGenerator::SolveElement2FaceStart(){
 }
 
 void MeshGenerator::CountFaces(){
-	int numFaceBC = 11; // TODO doit être lu à partir du MeshReader
+	int numFaceBC = m_markers->GetNElement();
 	int sumTot = m_element2NodeStart[m_nElement];
 
 	// A partir de sumTot et numFaceBC, il est possible de calculer le nombre de faces au total dans le maillage (sans double comptage)

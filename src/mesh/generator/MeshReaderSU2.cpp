@@ -1,6 +1,7 @@
 #include "MeshReaderSU2.hpp"
 #include "Parser.hpp"
 #include "../../utils/logger/Logger.cpp"
+#include "../MarkerContainer.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -13,27 +14,27 @@
 #include <stdexcept>
 
 MeshReaderSU2::MeshReaderSU2(std::string meshPath) {
-	parser = std::unique_ptr<Parser>(new Parser(meshPath, "%"));
+	m_parser = std::unique_ptr<Parser>(new Parser(meshPath, "%"));
 }
 
 void MeshReaderSU2::ReadFile() {
 	std::string message;
 
-	m_nDime = parser->ExtractNextInt();
+	m_nDime = m_parser->ExtractNextInt();
 	message = ("number of dimensions in the mesh= "+ std::to_string(m_nDime));
 	Logger::getInstance()->AddLog(message,1);
 
 	std::string word;
 	for (int i=0;i<3;i++){
-		word = parser->GetNextWord();
+		word = m_parser->GetNextWord();
 		if (word == "NELEM="){
-			m_nElement = parser->ExtractNextInt();
+			m_nElement = m_parser->ExtractNextInt();
 			Logger::getInstance()->AddLog("number of elements in the mesh= " + std::to_string(m_nElement),1);
+			this->ReadConnect(&m_nElement,&m_element2Node,&m_element2NodeStart);
 
-			MeshReaderSU2::ReadConnect();
 		} else if (word == "NPOIN=")
 		{
-			m_nNode = parser->ExtractNextInt();
+			m_nNode = m_parser->ExtractNextInt();
 			Logger::getInstance()->AddLog("number of points in the mesh= " + std::to_string(m_nNode),1);
 
 			MeshReaderSU2::ReadCoord();
@@ -58,12 +59,12 @@ void MeshReaderSU2::ReadCoord() {
 	// Filling of the coordinates array
 	for (int inode = 0; inode < m_nNode; inode++) {
 		for (int idim = 0; idim < m_nDime; idim++) {
-			val = parser->ExtractNextDouble();
+			val = m_parser->ExtractNextDouble();
 			m_coor[inode * m_nDime + idim] = val;
 			//std::cout << val << std::endl;
 		}
-		parser->m_inFile.unget();
-		parser->GetNextNonNullLine();
+		m_parser->m_inFile.unget();
+		m_parser->GetNextNonNullLine();
 	}
 }
 
@@ -102,48 +103,66 @@ int MeshReaderSU2::VtkElem2NNode(int VTKid) {
 	return number_of_nodes;
 }
 
-void MeshReaderSU2::ReadConnect() {
+void MeshReaderSU2::ReadConnect(int* nElement, std::unique_ptr<int[]>* element2Node, std::unique_ptr<int[]>* element2NodeStart) {
 	int val;
-	int filePosition = parser->m_inFile.tellg();
+	int filePosition = m_parser->m_inFile.tellg();
 	int element2NodeSize = 0;
 	int nNode;
 
 	// Counting size of connectivity matrix
-	for (int ielem = 0; ielem < m_nElement; ielem++) {
-		val = parser->ExtractNextInt();
+	for (int ielem = 0; ielem < (*nElement); ielem++) {
+		val = m_parser->ExtractNextInt();
 		nNode = MeshReaderSU2::VtkElem2NNode(val);
 		element2NodeSize += nNode;
-		parser->m_inFile.unget();
-		parser->GetNextNonNullLine();
+		m_parser->m_inFile.unget();
+		m_parser->GetNextNonNullLine();
 	}
-	parser->m_inFile.seekg(filePosition);
+	m_parser->m_inFile.seekg(filePosition);
 
 
 	// Filling of the connectivity matrix
-	m_element2Node = std::make_unique<int[]>(element2NodeSize);
-	m_element2NodeStart = std::make_unique<int[]>(m_nElement+1);
+	element2Node->reset(new int[element2NodeSize]);
+	element2NodeStart->reset(new int[(*nElement)+1]);
 
 	int element2NodeCurrentStart = 0;
 
-	m_element2NodeStart[0] = 0;
-	for (int ielem = 0; ielem < m_nElement; ielem++) {
+	(element2NodeStart->get())[0] = 0;
+	for (int ielem = 0; ielem < (*nElement); ielem++) {
 		
 
-		val = parser->ExtractNextInt();
+		val = m_parser->ExtractNextInt();
 		nNode = MeshReaderSU2::VtkElem2NNode(val);
 
 		for (int iNode = 0; iNode < nNode; iNode++) {
-			val = parser->ExtractNextInt();
-			m_element2Node[element2NodeCurrentStart] = val;
+			val = m_parser->ExtractNextInt();
+			(element2Node->get())[element2NodeCurrentStart] = val;
 			element2NodeCurrentStart++;
 		}
-		parser->m_inFile.unget();
-		parser->GetNextNonNullLine();
-		m_element2NodeStart[ielem+1] = element2NodeCurrentStart;
+		m_parser->m_inFile.unget();
+		m_parser->GetNextNonNullLine();
+		(element2NodeStart->get())[ielem+1] = element2NodeCurrentStart;
 	}
 }
 
 void MeshReaderSU2::ReadMarks() {
-	// nmark = MeshReader::Read_int();
-	// std::cout << "NMARK = " << nmark << std::endl;
+	int nMark = m_parser->ExtractNextInt();
+	Logger::getInstance()->AddLog("number of markers in the mesh= " + std::to_string(nMark),1);
+
+	m_markers = std::unique_ptr<MarkerContainer>(new MarkerContainer(nMark));
+	std::string tag;
+	int nElement;
+	std::unique_ptr<int[]> element2Node;
+	std::unique_ptr<int[]> element2NodeStart;
+	
+	for(int iMark = 0; iMark<nMark;iMark++){
+		m_parser->GetNextWord();
+		tag = m_parser->GetNextWord();
+		m_parser->GetNextWord();
+		nElement = m_parser->ExtractNextInt();
+
+		this->ReadConnect(&nElement,&element2Node,&element2NodeStart);
+
+		m_markers->AddMarker(&tag, &nElement, &element2Node, &element2NodeStart);
+	}
+
 }

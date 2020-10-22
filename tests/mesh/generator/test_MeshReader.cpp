@@ -59,10 +59,6 @@ TEST_F(MeshReaderSU2NewFormatTEST, ReadFile) {
 										 24};
 	std::vector<int> element2NodeStart_v(element2NodeStart.get(), element2NodeStart.get() + nElement+1);
 	ASSERT_THAT(element2NodeStart_v, testing::ElementsAreArray(element2NodeStart_exp));
-
-
-	// std::vector<double> v(coor.get(), coor.get() + nNode*nDime);
-	// ASSERT_THAT(v, testing::ElementsAreArray(expected_coord));
 }
 
 class MeshReaderSU2OLDFormatTEST : public ::testing::Test {
