@@ -1,7 +1,18 @@
+# Use new trusty images, should yield newer compilers and packages
+sudo: required
+dist: precise
 language: cpp
 
-compiler:
-  - gcc
+matrix:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env: COMPILER=g++-7
+
 
 # the install step will take care of deploying a newer cmake version
 install:    
@@ -26,8 +37,7 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 before_script:
-  # create a build folder for the out-of-source build
-  #- mkdir build
+  - g++ -v && cmake --version
   # switch to build directory
   - cd build
   # run cmake; here we assume that the project's
