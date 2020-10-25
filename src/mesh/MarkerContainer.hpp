@@ -19,7 +19,7 @@ public:
     ~MarkerContainer();
 
     // methods
-    void AddMarker(std::string* tag, int* nElement, std::unique_ptr<int[]>* element2Node, std::unique_ptr<int[]>* element2NodeStart);
+    void AddMarker(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart);
     int GetNElement();
 };
 

@@ -9,20 +9,16 @@ MeshGenerator::MeshGenerator(){
     
 }
 
-MeshGenerator::MeshGenerator(std::string meshPath){
-    reader = std::unique_ptr<MeshReader>(new MeshReaderSU2(meshPath));
+MeshGenerator::MeshGenerator(Mesh* mesh){
+	m_mesh = mesh;
 }
 
 MeshGenerator::~MeshGenerator(){
     //empty
 }
 
-Mesh MeshGenerator::BuildMesh(){
+void MeshGenerator::BuildMesh(){
     // Read values from input file
-    reader->ReadFile();
-    reader->get_values(&m_nDime, &m_nNode, &m_nElement, &m_coor, &m_element2Node, &m_element2NodeStart);
-	reader->get_markers(&m_markers);
-
 	this->CountFaces();
 
 	this->SolveNode2ElementStart();
@@ -32,11 +28,6 @@ Mesh MeshGenerator::BuildMesh(){
 	this->SolveFace2Element();
 	this->SolveFace2Node();
 
-	this->SolveVolume();
-
-	Mesh mesh(&m_nDime, &m_nNode, &m_nElement, &m_nFace, &m_nFaceInt,
-	          &m_coor, &m_face2Element, &m_face2Node);
-	return mesh;
 }
 
 void MeshGenerator::SolveNode2ElementStart(){
@@ -45,24 +36,24 @@ void MeshGenerator::SolveNode2ElementStart(){
     int nodeI;
 	int j;
 
-    m_node2ElementStart = std::unique_ptr<int[]>(new int[m_nNode+1] ());
+    m_mesh->m_node2ElementStart = new int[m_mesh->m_nNode+1]();
     // Looping over the elements to count the number of elements around each nodes
-	for (int elemi=0;elemi<m_nElement;++elemi){
+	for (int elemi=0;elemi<m_mesh->m_nElement;++elemi){
 		// Starting and ending indices for the node connectivity
-		startI =m_element2NodeStart[elemi];
-		endI =m_element2NodeStart[elemi+1];
+		startI =m_mesh->m_element2NodeStart[elemi];
+		endI =m_mesh->m_element2NodeStart[elemi+1];
 
 		// Looping over the nodes of elementI
 		for (int i=startI;i<endI;++i){
-			nodeI = m_element2Node[i];
-			m_node2ElementStart[nodeI+1] += 1;
+			nodeI = m_mesh->m_element2Node[i];
+			m_mesh->m_node2ElementStart[nodeI+1] += 1;
 		}
 	}    
 
 
 	// Setting up the start offset linked list
-	for (int i=1;i<m_nNode+1;++i){
-		m_node2ElementStart[i] += m_node2ElementStart[i-1];
+	for (int i=1;i<m_mesh->m_nNode+1;++i){
+		m_mesh->m_node2ElementStart[i] += m_mesh->m_node2ElementStart[i-1];
 	}
 }
 
@@ -73,56 +64,56 @@ void MeshGenerator::SolveNode2Element(){
 	int j;
 
 	// Initializing the node to element linked list connectivity
-	m_node2Element = std::unique_ptr<int[]>(new int[m_element2NodeStart[m_nElement]]());
+	m_mesh->m_node2Element = new int[m_mesh->m_element2NodeStart[m_mesh->m_nElement]]();
 	
 	// Array to save the increment
-	int store[m_nNode]={0};
+	int store[m_mesh->m_nNode]={0};
 
-	for (int elemi=0;elemi<m_nElement;++elemi){
-		startI=m_element2NodeStart[elemi];
-		endI=m_element2NodeStart[elemi+1];
+	for (int elemi=0;elemi<m_mesh->m_nElement;++elemi){
+		startI=m_mesh->m_element2NodeStart[elemi];
+		endI=m_mesh->m_element2NodeStart[elemi+1];
 
 		for (int i=startI;i<endI;++i){
-			nodeI=m_element2Node[i];
+			nodeI=m_mesh->m_element2Node[i];
 			// Fetching the index for the connectivity list
-			j=m_node2ElementStart[nodeI]+store[nodeI];
+			j=m_mesh->m_node2ElementStart[nodeI]+store[nodeI];
 			// Adding the element index for nodeI
-			m_node2Element[j] = elemi;
+			m_mesh->m_node2Element[j] = elemi;
 			store[nodeI]+=1;
 		}
 	}
 }
 
 void MeshGenerator::SolveElement2ElementStart(){
-	m_element2ElementStart = std::unique_ptr<int[]>(new int[m_nElement+1]());
+	m_mesh->m_element2ElementStart = new int[m_mesh->m_nElement+1]();
 
 	// Counting the number of faces per elements
 	int nLocalFaces;
 	int startI;
 	int endI;
 
-	for (int elemi = 0; elemi < m_nElement; ++elemi) {
-		startI = m_element2NodeStart[elemi];
-		endI = m_element2NodeStart[elemi + 1];
+	for (int elemi = 0; elemi < m_mesh->m_nElement; ++elemi) {
+		startI = m_mesh->m_element2NodeStart[elemi];
+		endI = m_mesh->m_element2NodeStart[elemi + 1];
 		nLocalFaces = endI - startI;
-		m_element2ElementStart[elemi + 1] += nLocalFaces;
+		m_mesh->m_element2ElementStart[elemi + 1] += nLocalFaces;
 	}
 	// Final setup of the element 2 element start offset linked list
-	for (int i = 1; i < m_nElement + 1; ++i) {
-		m_element2ElementStart[i] += m_element2ElementStart[i - 1];
+	for (int i = 1; i < m_mesh->m_nElement + 1; ++i) {
+		m_mesh->m_element2ElementStart[i] += m_mesh->m_element2ElementStart[i - 1];
 	}
 }
 
 void MeshGenerator::SolveElement2FaceStart(){
-	m_element2FaceStart = m_element2ElementStart.get();
+	m_mesh->m_element2FaceStart = m_mesh->m_element2ElementStart;
 }
 
 void MeshGenerator::CountFaces(){
-	int numFaceBC = m_markers->GetNElement();
-	int sumTot = m_element2NodeStart[m_nElement];
+	int numFaceBC = m_mesh->m_markers->GetNElement();
+	int sumTot = m_mesh->m_element2NodeStart[m_mesh->m_nElement];
 
 	// A partir de sumTot et numFaceBC, il est possible de calculer le nombre de faces au total dans le maillage (sans double comptage)
-	m_nFace = (sumTot + numFaceBC) / 2;	
+	m_mesh->m_nFace = (sumTot + numFaceBC) / 2;	
 }
 
 void MeshGenerator::SolveFaceConnectivity(){
@@ -131,36 +122,33 @@ void MeshGenerator::SolveFaceConnectivity(){
 	int endI;
 
 	// Initializing the element 2 element linked list to -1 using fill_n from <algorithm>
-	int* element2Element = new int[m_element2ElementStart[m_nElement]];
-	std::fill_n(element2Element, m_element2ElementStart[m_nElement], -1);
-	m_element2Element = std::unique_ptr<int[]>(element2Element);
+	m_mesh->m_element2Element = new int[m_mesh->m_element2ElementStart[m_mesh->m_nElement]];
+	std::fill_n(m_mesh->m_element2Element, m_mesh->m_element2ElementStart[m_mesh->m_nElement], -1);
 
 	// Initializing the face surrounding element linked list to -1
-	int* element2Face = new int[m_element2ElementStart[m_nElement]];
-	std::fill_n(element2Face, m_element2ElementStart[m_nElement], -1);
-	m_element2Face = std::unique_ptr<int[]>(element2Face);
+	m_mesh->m_element2Face = new int[m_mesh->m_element2ElementStart[m_mesh->m_nElement]];
+	std::fill_n(m_mesh->m_element2Face, m_mesh->m_element2ElementStart[m_mesh->m_nElement], -1);
 
 	// Initializing the face2element linked list to -1
-	int* face2Element = new int[m_nFace * 2];
-	std::fill_n(face2Element, m_nFace * 2, -1);
-	m_face2Element = std::unique_ptr<int[]>(face2Element);
+	m_mesh->m_face2Element = new int[m_mesh->m_nFace * 2];
+	std::fill_n(m_mesh->m_face2Element, m_mesh->m_nFace * 2, -1);
 
 	// Initializing the face2node linked list to -1
 	// TODO Changer pour le 3D
 	// On doit d'abord calculer la longueur de cette liste
 	// La longueur de la liste correspond a la somme du nombre de noeuds par face
 	// Dans l'exemple presente dans le manuel, le nombre de noeuds par face est 2 pour chacune des faces (le cas pour tous les maillages 2D)
-	int numNodePerFace[m_nFace];// Idealement cet array est une sortie de MeshReader
-	for (int i = 0; i < m_nFace; ++i) {
+	int numNodePerFace[m_mesh->m_nFace];// Idealement cet array est une sortie de MeshReader
+	for (int i = 0; i < m_mesh->m_nFace; ++i) {
 		numNodePerFace[i] = 2;
 		m_longueurFace2node += numNodePerFace[i];
 	}
 	// Initializing the face2node linked list to
-	m_face2Node = std::unique_ptr<int[]>(new int[m_longueurFace2node]);
+	m_mesh->m_face2Node =new int[m_longueurFace2node];
 
 	// Array to save information to speedup the process
 	m_lhelp = std::unique_ptr<int[]>(new int[m_nNodesForFace]());
-	int lpoint[m_nNode] = {0};
+	int lpoint[m_mesh->m_nNode] = {0};
 	int ipoint;
 	int elemStart;
 	int elemEnd;
@@ -176,9 +164,9 @@ void MeshGenerator::SolveFaceConnectivity(){
 	m_nodeCount = 0;
 
 	// Looping over all elements in the mesh
-	for (int elemi = 0; elemi < m_nElement; ++elemi) {
-		startI = m_element2NodeStart[elemi];
-		endI = m_element2NodeStart[elemi + 1];
+	for (int elemi = 0; elemi < m_mesh->m_nElement; ++elemi) {
+		startI = m_mesh->m_element2NodeStart[elemi];
+		endI = m_mesh->m_element2NodeStart[elemi + 1];
 		nLocalFaces = endI - startI;
 
 
@@ -188,11 +176,11 @@ void MeshGenerator::SolveFaceConnectivity(){
 			nNodesForFaceI = m_nNodesForFace;// to be changed for 3D m_nNodesForFace to be an array
 
 			//Saving the nodes of the face to find
-			m_lhelp[0] = m_element2Node[startI + faceI];
+			m_lhelp[0] = m_mesh->m_element2Node[startI + faceI];
 			if (faceI == nLocalFaces - 1) {
-				m_lhelp[1] = m_element2Node[startI];
+				m_lhelp[1] = m_mesh->m_element2Node[startI];
 			} else {
-				m_lhelp[1] = m_element2Node[startI + faceI + 1];
+				m_lhelp[1] = m_mesh->m_element2Node[startI + faceI + 1];
 			}
 
 			// Storing the nodes of the face
@@ -202,17 +190,17 @@ void MeshGenerator::SolveFaceConnectivity(){
 			// Choosing the first node to loop over its Elements
 			ipoint = m_lhelp[0];
 
-			elemStart = m_node2ElementStart[ipoint];
-			elemEnd = m_node2ElementStart[ipoint + 1];
+			elemStart = m_mesh->m_node2ElementStart[ipoint];
+			elemEnd = m_mesh->m_node2ElementStart[ipoint + 1];
 
 
 			// Looping over the elements connected to point ipoint
 			for (int j = elemStart; j < elemEnd; ++j) {
-				elemj = m_node2Element[j];
+				elemj = m_mesh->m_node2Element[j];
 
 				if (elemj != elemi) {
-					startJ = m_element2NodeStart[elemj];
-					endJ = m_element2NodeStart[elemj + 1];
+					startJ = m_mesh->m_element2NodeStart[elemj];
+					endJ = m_mesh->m_element2NodeStart[elemj + 1];
 					nLocaleFacesJ = endJ - startJ;
 
 					// Looping over the faces of elementJ
@@ -227,24 +215,24 @@ void MeshGenerator::SolveFaceConnectivity(){
 								if (facej == (nLocaleFacesJ - 1) && localNodeJ == (nNodesForFaceJ - 1)) {
 									pointIndex = startJ;
 								}
-								count += lpoint[m_element2Node[pointIndex]];
+								count += lpoint[m_mesh->m_element2Node[pointIndex]];
 								// If the number of matching nodes is equal to the number of nodes in faceI, faceJ is a match with faceI
 								if (count == nNodesForFaceI) {
 									//Adding elementJ to the connectivity of elementI
-									m_element2Element[m_element2ElementStart[elemi] + faceI] = elemj;
+									m_mesh->m_element2Element[m_mesh->m_element2ElementStart[elemi] + faceI] = elemj;
 
 									// Checking if the face has already been added
-									if (m_element2Element[m_element2ElementStart[elemj] + facej] == elemi) {
-										m_element2Face[m_element2ElementStart[elemi] + faceI] = m_element2Face[m_element2ElementStart[elemj] + facej];
+									if (m_mesh->m_element2Element[m_mesh->m_element2ElementStart[elemj] + facej] == elemi) {
+										m_mesh->m_element2Face[m_mesh->m_element2ElementStart[elemi] + faceI] = m_mesh->m_element2Face[m_mesh->m_element2ElementStart[elemj] + facej];
 									}
 									// Adding a new face
 									else {
-										m_element2Face[m_element2ElementStart[elemi] + faceI] = faceCount;
-										m_element2Face[m_element2ElementStart[elemj] + facej] = faceCount;
-										m_face2Element[2 * faceCount + 0] = elemi;
-										m_face2Element[2 * faceCount + 1] = elemj;
+										m_mesh->m_element2Face[m_mesh->m_element2ElementStart[elemi] + faceI] = faceCount;
+										m_mesh->m_element2Face[m_mesh->m_element2ElementStart[elemj] + facej] = faceCount;
+										m_mesh->m_face2Element[2 * faceCount + 0] = elemi;
+										m_mesh->m_face2Element[2 * faceCount + 1] = elemj;
 										for (int i = 0; i < nNodesForFaceI; ++i) {
-											m_face2Node[m_nodeCount] = m_lhelp[i];
+											m_mesh->m_face2Node[m_nodeCount] = m_lhelp[i];
 											m_nodeCount += 1;
 										}
 										faceCount += 1;
@@ -263,33 +251,33 @@ void MeshGenerator::SolveFaceConnectivity(){
 	}
 
 	// Parcours de esuel pour calculer le nombre d'elements au total
-	int elemCount = m_nElement;
+	int elemCount = m_mesh->m_nElement;
 	int nElemTot;
 	int nGhostCells;
 
-	for (int i = 0; i < m_element2ElementStart[m_nElement]; ++i) {
-		if (m_element2Element[i] == -1) {
-			m_element2Element[i] = elemCount;
+	for (int i = 0; i < m_mesh->m_element2ElementStart[m_mesh->m_nElement]; ++i) {
+		if (m_mesh->m_element2Element[i] == -1) {
+			m_mesh->m_element2Element[i] = elemCount;
 			elemCount += 1;
 		}
 	}
 	nElemTot = elemCount;
-	nGhostCells = nElemTot - m_nElement;
+	nGhostCells = nElemTot - m_mesh->m_nElement;
 
 
-	m_nFaceInt = faceCount;// Nombre de faces interne
+	m_mesh->m_nFaceInt = faceCount;// Nombre de faces interne
 	//int nBondFaces;           // Nombre de faces frontieres
 
 
 	// Parcours de fsuel pour calculer le nombre de faces au total
 
-	for (int i = 0; i < m_element2ElementStart[m_nElement]; ++i) {
-		if (m_element2Face[i] == -1) {
-			m_element2Face[i] = faceCount;
+	for (int i = 0; i < m_mesh->m_element2ElementStart[m_mesh->m_nElement]; ++i) {
+		if (m_mesh->m_element2Face[i] == -1) {
+			m_mesh->m_element2Face[i] = faceCount;
 			faceCount += 1;
 		}
 	}
-	//nBondFaces = m_nFace - m_nFaceInt;
+	//nBondFaces = m_mesh->m_nFace - m_mesh->m_nFaceInt;
 
 }
 
@@ -306,19 +294,19 @@ void MeshGenerator::SolveFace2Element(){
 	int elemi;
 	int elemj;
 
-	for (int faceI = m_nFaceInt; faceI < m_nFace; ++faceI) {//Looping over the faces
+	for (int faceI = m_mesh->m_nFaceInt; faceI < m_mesh->m_nFace; ++faceI) {//Looping over the faces
 		compteur = 0;
 		condition = 1;
 		i = 0;
 		while (condition) {
-			if (m_element2Face[i] == faceI) {
+			if (m_mesh->m_element2Face[i] == faceI) {
 				indiceFace[compteur] = i;
 				compteur += 1;
 			}
 			if (compteur == 2) {
 				condition = 0;
-			} else if (compteur == 1 && i > m_element2FaceStart[m_nElement]) {
-				indiceFace[compteur] = m_element2FaceStart[m_nElement];
+			} else if (compteur == 1 && i > m_mesh->m_element2FaceStart[m_mesh->m_nElement]) {
+				indiceFace[compteur] = m_mesh->m_element2FaceStart[m_mesh->m_nElement];
 				condition = 0;
 			} else {
 				i += 1;
@@ -327,7 +315,7 @@ void MeshGenerator::SolveFace2Element(){
 		condition2 = 1;
 		j = 0;
 		while (condition2) {
-			if (m_element2FaceStart[j] <= indiceFace[0] && m_element2FaceStart[j + 1] > indiceFace[0]) {
+			if (m_mesh->m_element2FaceStart[j] <= indiceFace[0] && m_mesh->m_element2FaceStart[j + 1] > indiceFace[0]) {
 				elemi = j;
 				condition2 = 0;
 			} else {
@@ -337,28 +325,28 @@ void MeshGenerator::SolveFace2Element(){
 		condition3 = 1;
 		k = 0;
 		while (condition3) {
-			if (m_element2FaceStart[k] <= indiceFace[1] && m_element2FaceStart[k + 1] > indiceFace[1]) {
+			if (m_mesh->m_element2FaceStart[k] <= indiceFace[1] && m_mesh->m_element2FaceStart[k + 1] > indiceFace[1]) {
 				elemj = k;
 				condition3 = 0;
 			} else {
 				k += 1;
 			}
 
-			if (k == m_nElement) {
+			if (k == m_mesh->m_nElement) {
 				elemj = -1;
 				condition3 = 0;
 			}
 		}
-		m_face2Element[2 * faceI + 0] = elemi;
-		m_face2Element[2 * faceI + 1] = elemj;
+		m_mesh->m_face2Element[2 * faceI + 0] = elemi;
+		m_mesh->m_face2Element[2 * faceI + 1] = elemj;
 	}
 
 
 	// Passage dans face2element pour mettre a jour les ghost cells
-	int countGhostcells = m_nElement;
-	for (int i = 0; i < 2 * m_nFace; ++i) {
-		if (m_face2Element[i] == -1) {
-			m_face2Element[i] = countGhostcells;
+	int countGhostcells = m_mesh->m_nElement;
+	for (int i = 0; i < 2 * m_mesh->m_nFace; ++i) {
+		if (m_mesh->m_face2Element[i] == -1) {
+			m_mesh->m_face2Element[i] = countGhostcells;
 			countGhostcells += 1;
 		}
 	}
@@ -367,16 +355,16 @@ void MeshGenerator::SolveFace2Element(){
 
 void MeshGenerator::SolveFace2Node(){
 	// Passage dans face2node pour mettre a jour les ghost cells
-	int countGhostcells = m_nElement;
+	int countGhostcells = m_mesh->m_nElement;
 	int trouve;
 	int startI;
 	int endI;
 	int nLocalFaces;
 
 	//int depasse=0;
-	for (int elemi = 0; elemi < m_nElement; ++elemi) {
-		startI = m_element2NodeStart[elemi];
-		endI = m_element2NodeStart[elemi + 1];
+	for (int elemi = 0; elemi < m_mesh->m_nElement; ++elemi) {
+		startI = m_mesh->m_element2NodeStart[elemi];
+		endI = m_mesh->m_element2NodeStart[elemi + 1];
 		nLocalFaces = endI - startI;
 
 		for (int faceI = 0; faceI < nLocalFaces; ++faceI) {// En 2D, cette ligne est vraie,
@@ -384,166 +372,25 @@ void MeshGenerator::SolveFace2Node(){
 			                                               //au nombre de faces, il faut donc penser a creer, en plus de numNodeElem,
 			                                               // un vecteur qui va stocker le nombre de faces par element!!
 			                                               // for (int faceI=0;faceI<numFaceElem[elemi])...
-			m_lhelp[0] = m_element2Node[startI + faceI];
+			m_lhelp[0] = m_mesh->m_element2Node[startI + faceI];
 			if (faceI == nLocalFaces - 1) {
-				m_lhelp[1] = m_element2Node[startI];
+				m_lhelp[1] = m_mesh->m_element2Node[startI];
 			} else {
-				m_lhelp[1] = m_element2Node[startI + faceI + 1];
+				m_lhelp[1] = m_mesh->m_element2Node[startI + faceI + 1];
 			}
 
 			trouve = 0;
 			for (int i = 0; i < m_longueurFace2node / 2; ++i) {
-				if (m_face2Node[i * m_nNodesForFace] == m_lhelp[0] && m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[1] || m_face2Node[i * m_nNodesForFace] == m_lhelp[1] && m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[0]) {
+				if (m_mesh->m_face2Node[i * m_nNodesForFace] == m_lhelp[0] && m_mesh->m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[1] || m_mesh->m_face2Node[i * m_nNodesForFace] == m_lhelp[1] && m_mesh->m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[0]) {
 					trouve = 1;
 				}
 			}
 
 			if (!trouve) {
-				m_face2Node[m_nodeCount] = m_lhelp[0];
-				m_face2Node[m_nodeCount + 1] = m_lhelp[1];
+				m_mesh->m_face2Node[m_nodeCount] = m_lhelp[0];
+				m_mesh->m_face2Node[m_nodeCount + 1] = m_lhelp[1];
 				m_nodeCount += 2;
 			}
 		}
 	}
-}
-
-void MeshGenerator::SolveVolume(){
-	// Volume fonctionne seulement pour 2D
-	int indexStart;
-	int indexEnd;
-	int numberOfNode;
-
-	int node1;
-	int node2;
-	int node3;
-	int node4;
-
-	double x1, x2, x3 , x4, y1, y2, y3, y4;
-
-	double volume;
-
-	m_element2Volume = std::unique_ptr<double[]>(new double[m_nElement]);
-	for(int iElement = 0; iElement<m_nElement; iElement++){
-		indexStart =	m_element2NodeStart[iElement];
-		indexEnd =	m_element2NodeStart[iElement+1];
-		numberOfNode = indexEnd-indexStart;
-		
-		node1 = m_element2Node[indexStart];
-		node2 = m_element2Node[indexStart+1];
-		node3 = m_element2Node[indexStart+2];
-
-		x1 = m_coor[node1 * m_nDime + 0];
-		x2 = m_coor[node2 * m_nDime + 0];
-		x3 = m_coor[node3 * m_nDime + 0];
-
-		y1 = m_coor[node1 * m_nDime + 1];
-		y2 = m_coor[node2 * m_nDime + 1];
-		y3 = m_coor[node3 * m_nDime + 1];		
-		
-		if (numberOfNode==3){
-			volume = this->GetTriangleVolume(x1,x2,x3,y1,y2,y3);
-		} else{
-			node4 = m_element2Node[indexStart+3];
-			x4 = m_coor[node4 * m_nDime + 0];
-			y4 = m_coor[node4 * m_nDime + 1];
-
-			volume = 0.5*((x1-x3)*(y2-y4)+(x4-x2)*(y1-y3));
-		}
-		m_element2Volume[iElement] = volume;
-	}
-}
-
-void MeshGenerator::SolveFaceVector(){
-	m_face2FaceVector = std::unique_ptr<double[]>(new double[m_nDime*m_nFace]);
-	m_face2Normal = std::unique_ptr<double[]>(new double[m_nDime*m_nFace]);
-	m_face2Area = std::unique_ptr<double[]>(new double[m_nFace]);
-
-	int node1, node2;
-
-	double x1,x2,y1,y2,area;
-
-	for(int iFace = 0; iFace<m_nFace; iFace++){
-		node1 = m_face2Node[iFace*m_nDime+0];
-		node2 = m_face2Node[iFace*m_nDime+1];
-
-		x1 = m_coor[node1 * m_nDime + 0];
-		x2 = m_coor[node2 * m_nDime + 0];
-
-		y1 = m_coor[node1 * m_nDime + 1];
-		y2 = m_coor[node2 * m_nDime + 1];
-
-		m_face2FaceVector[iFace*m_nDime+0] = y2-y1;
-		m_face2FaceVector[iFace*m_nDime+1] = x1-x2;
-
-		area = pow((pow((x2-x1),2.0)+pow((y2-y1),2.0)),0.5);
-		m_face2Area[iFace] = area;
-
-		m_face2Normal[iFace*m_nDime+0] = (y2-y1)/area;
-		m_face2Normal[iFace*m_nDime+1] = (x1-x2)/area;
-	}
-}
-
-void MeshGenerator::SolveElement2Center(){
-	// Volume fonctionne seulement pour 2D
-	int indexStart;
-	int indexEnd;
-	int numberOfNode;
-
-	int node1;
-	int node2;
-	int node3;
-	int node4;
-
-	double x1, x2, x3 , x4, y1, y2, y3, y4;
-
-	double vol1,  vol2;
-
-	double* center, center1, center2;
-
-	m_element2Center = std::unique_ptr<double[]>(new double[m_nDime*m_nFace]);
-	for(int iElement = 0; iElement<m_nElement; iElement++){
-		indexStart =	m_element2NodeStart[iElement];
-		indexEnd =	m_element2NodeStart[iElement+1];
-		numberOfNode = indexEnd-indexStart;
-		
-		node1 = m_element2Node[indexStart];
-		node2 = m_element2Node[indexStart+1];
-		node3 = m_element2Node[indexStart+2];
-
-		x1 = m_coor[node1 * m_nDime + 0];
-		x2 = m_coor[node2 * m_nDime + 0];
-		x3 = m_coor[node3 * m_nDime + 0];
-
-		y1 = m_coor[node1 * m_nDime + 1];
-		y2 = m_coor[node2 * m_nDime + 1];
-		y3 = m_coor[node3 * m_nDime + 1];		
-		if (numberOfNode==3){
-			center = this->GetTriangleCenter(x1,x2,x3,y1,y2,y3);
-
-		} else{
-			node4 = m_element2Node[indexStart+3];
-			x4 = m_coor[node4 * m_nDime + 0];
-			y4 = m_coor[node4 * m_nDime + 1];
-
-			center1 = this->GetTriangleCenter(x1,x2,x3,y1,y2,y3);
-			center2 = this->GetTriangleCenter(x1,x3,x4,y1,y3,y4);
-			vol1 = this->GetTriangleVolume(x1,x2,x3,y1,y2,y3);
-			vol2 = this->GetTriangleVolume(x1,x3,x4,y1,y3,y4);
-
-			center[0]
-		}
-		m_element2Volume[iElement] = volume;
-	}
-}
-
-double* MeshGenerator::GetTriangleCenter(double x1, double x2, double x3, double y1, double y2, double y3){
-	double* center;
-	center = new double[2];
-	center[0] = (x1+x2+x3)/3;
-	center[1] = (y1+y2+y3)/3;
-	return center;
-}
-
-double MeshGenerator::GetTriangleVolume(double x1, double x2, double x3, double y1, double y2, double y3){
-	return 0.5*((x1-x2)*(y1+y2)+(x2-x3)*(y2+y3)+(x3-x1)*(y3+y1));
 }

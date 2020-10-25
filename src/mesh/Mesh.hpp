@@ -3,25 +3,45 @@
 
 #include <memory>
 #include <string>
+#include "MarkerContainer.hpp"
 
 class Mesh {
-protected:
+public:
+	// Connectivité
 	int m_nDime;
 	int m_nNode;
 	int m_nElement;
-	int m_nFace;   // Number of faces without double counting
-	int m_nFaceInt;// Number of internal faces
+	int m_nFace;   			// Number of faces without double counting
+	int m_nFaceInt;			// Number of internal faces
 
-	std::unique_ptr<double[]> m_coor;
+	double* m_coor;
+	int* m_element2Node;
+	int* m_element2NodeStart;	
+	
+	int* m_node2Element;
+	int* m_node2ElementStart;	
+	
+	int* m_element2Element;
+	int* m_element2ElementStart;	
 
-	std::unique_ptr<int[]> m_element2Face;
-	std::unique_ptr<int[]> m_element2FaceStart;
+	int* m_element2Face;
+	int* m_element2FaceStart;	
 
-	std::unique_ptr<int[]> m_face2Element;
-	std::unique_ptr<int[]> m_face2Node;
+	int* m_face2Element;
+	int* m_face2Node;
 
-public:
+	// Markers
+	MarkerContainer* m_markers;
+
+	// metrics
+	double* m_element2Volume;
+	double* m_face2FaceVector;
+	double* m_face2Normal;
+	double* m_face2Area;
+	double* m_element2Center;	
+
 	// constructor and destructor
-	Mesh(int *nDime, int *nNode, int *nElement, int *nFace, int *nFaceInt,
-	     std::unique_ptr<double[]> *coor, std::unique_ptr<int[]> *face2Element, std::unique_ptr<int[]> *face2Node);
+	Mesh();
+	~Mesh();
+
 };
