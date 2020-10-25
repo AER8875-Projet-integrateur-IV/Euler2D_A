@@ -41,10 +41,13 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	MeshGenerator generator(inpath);
-	Mesh mesh = generator.BuildMesh();
-
+	Mesh mesh = Mesh();
+	MeshReaderSU2 reader(inpath, &mesh); 
+	delete &reader;
+	MeshGenerator generator(&mesh);
+	generator.BuildMesh();
 	delete &generator;
+
 	delete &mesh;
 	
 	return 0;

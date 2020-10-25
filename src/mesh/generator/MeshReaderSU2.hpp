@@ -13,11 +13,11 @@ protected:
 	std::unique_ptr<Parser> m_parser;
 	
 	void ReadCoord();
-	void ReadConnect(int* nElement, std::unique_ptr<int[]>* element2Node, std::unique_ptr<int[]>* element2NodeStart);
+	void ReadConnect(int* nElement, int* element2Node, int* element2NodeStart);
 	void ReadMarks();
 	int VtkElem2NNode(int vtkId);
 
 public:
-	MeshReaderSU2(std::string meshPath);
+	MeshReaderSU2(std::string meshPath, Mesh* mesh);
 	void ReadFile();
 };
