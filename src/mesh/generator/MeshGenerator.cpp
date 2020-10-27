@@ -115,6 +115,7 @@ void MeshGenerator::CountFaces(){
 
 	// A partir de sumTot et numFaceBC, il est possible de calculer le nombre de faces au total dans le maillage (sans double comptage)
 	m_mesh->m_nFace = (sumTot + numFaceBC) / 2;	
+	m_mesh->m_nFaceNoBoundaries = m_mesh->m_nFace-numFaceBC;
 }
 
 void MeshGenerator::SolveFaceConnectivity(){
