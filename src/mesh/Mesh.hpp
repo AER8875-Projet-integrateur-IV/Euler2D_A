@@ -12,7 +12,8 @@ public:
 	int m_nNode;
 	int m_nElement;
 	int m_nFace;   			// Number of faces without double counting
-	int m_nFaceInt;			// Number of internal faces
+	int m_nFaceInt;			// Number of internal faces with double counting
+	int m_nFaceNoBoundaries;// Number of internal faces without double counting
 
 	double* m_coor;
 	int* m_element2Node;

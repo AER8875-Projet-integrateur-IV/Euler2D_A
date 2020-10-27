@@ -43,12 +43,32 @@ int main(int argc, char *argv[]) {
 	}
 
 	Mesh mesh = Mesh();
+
 	MeshReaderSU2 reader(inpath, &mesh); 
 	reader.ReadFile();
+
 	MeshGenerator generator(&mesh);
 	generator.BuildMesh();
+
 	MetricsGenerator metrics(&mesh);
 	metrics.Solve();
 	
+	printf("nFace = %2d \n",mesh.m_nFace);
+	for (int i=0;i<mesh.m_nFace*2;i++){
+		printf("%2d ",mesh.m_face2Element[i]);
+		// std::cout<<to_string()<< " " <<std::endl;
+	}
+	
+	for (int i=0;i<mesh.m_nElement*2;i++){
+		//printf("%f ",metrics.m_mesh->m_element2Volume[i]);
+		//printf("\n");
+		//printf("%f ",metrics.m_mesh->m_element[i]);
+		//printf("\n");
+		//printf("%f ",metrics.m_mesh->m_element2Volume[i]);
+		//printf("\n");
+		// std::cout<<to_string()<< " " <<std::endl;
+	}
+
+
 	return 0;
 }

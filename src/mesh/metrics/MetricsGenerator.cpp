@@ -15,6 +15,12 @@ MetricsGenerator::~MetricsGenerator()
 {
 }
 
+void MetricsGenerator::Solve(){
+	this->SolveVolume();
+	this->SolveFaceVector();
+	this->SolveElement2Center();
+	printf("\n%f\n ",m_mesh->m_element2Volume[5]);
+}
 
 void MetricsGenerator::SolveVolume(){
 	// Volume fonctionne seulement pour 2D
@@ -61,6 +67,7 @@ void MetricsGenerator::SolveVolume(){
 			throw std::invalid_argument(std::to_string(VTKId)+" is not a valid VTK element");
 		}
 		m_mesh->m_element2Volume[iElement] = volume;
+		printf("%f ",m_mesh->m_element2Volume[iElement]);
 	}
 	Logger::getInstance()->AddLog("Volumes calculated",1);
 }
@@ -144,8 +151,8 @@ void MetricsGenerator::SolveElement2Center(){
 			this->GetTriangleCenter(x1,x3,x4,y1,y3,y4,center2);
 			vol1 = this->GetTriangleVolume(x1,x2,x3,y1,y2,y3);
 			vol2 = this->GetTriangleVolume(x1,x3,x4,y1,y3,y4);
-			center[0] = vol1 * center1[0] + vol2 * center2[0] * vol1 + vol2;
-			center[1] = vol1 * center1[1] + vol2 * center2[1] * vol1 + vol2;
+			center[0] = (vol1 * center1[0] + vol2 * center2[0]) / (vol1 + vol2);
+			center[1] = (vol1 * center1[1] + vol2 * center2[1]) / (vol1 + vol2);
 		}
 		m_mesh->m_element2Center[iElement * m_mesh->m_nDime + 0] = center[0];
 		m_mesh->m_element2Center[iElement * m_mesh->m_nDime + 1] = center[1];

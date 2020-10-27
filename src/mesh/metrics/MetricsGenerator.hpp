@@ -4,17 +4,15 @@ class MetricsGenerator
 {
 protected:
 	// Metrics attributes
-	Mesh* m_mesh;
+	
 
 public:
     MetricsGenerator(Mesh* mesh);
     ~MetricsGenerator();
+	Mesh* m_mesh;
+	
+	void Solve();
 
-	void Solve(){
-		this->SolveVolume();
-		this->SolveFaceVector();
-		this->SolveElement2Center();
-	}
 	void SolveVolume();
 	void SolveFaceVector();
 	void SolveElement2Center();
