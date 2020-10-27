@@ -50,6 +50,9 @@ std::string Parser::GetNextWord() {
 	while (1)
 	{
 		filePosition = m_inFile.tellg();
+		if (filePosition == -1){
+			throw "End of file";
+		}
 		m_inFile >> word;
 		if (word.rfind(m_commentString, 0) == 0) {
 			m_inFile.seekg(filePosition);

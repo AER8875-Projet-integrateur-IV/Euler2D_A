@@ -20,10 +20,21 @@ Logger* Logger::getInstance(){
 }
 
 void Logger::AddLog(std::string message, int verbosityLevel){
-    if (verbosityLevel <= m_verbosityLevel){
-        std::cout << message << std::endl;
-    }
+    this->AddLog(message, verbosityLevel, true);
 }
+
+void Logger::AddLog(std::string message, int verbosityLevel, bool endofline){
+    if (verbosityLevel <= m_verbosityLevel){
+        std::cout << message;
+        if (endofline == true){
+            std::cout << std::endl;
+        } else {
+            std::cout << std::flush;
+        }
+    }
+
+}
+
 
 void Logger::SetVerbosity(int verbosityLevel){
     m_verbosityLevel = verbosityLevel;

@@ -20,6 +20,7 @@ public:
 
     // methods
     void AddMarker(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart, int* element2VTKId);
+    void Check4Face(int* face2Node, int* face2NodeStart, int FirstBorderFace, int LastBorderFace);
     int GetNElement();
 };
 

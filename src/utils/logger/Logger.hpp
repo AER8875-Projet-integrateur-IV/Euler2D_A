@@ -14,6 +14,7 @@ private:
 public:
     static Logger *getInstance();
     void AddLog(std::string message, int verbosityLevel);
+    void AddLog(std::string message, int verbosityLevel, bool endofline);
     void SetVerbosity(int verbosityLevel);
 };
 
