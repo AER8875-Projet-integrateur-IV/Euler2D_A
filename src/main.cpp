@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include "utils/logger/Logger.hpp"
+#include "mesh/metrics/MetricsGenerator.hpp"
 
 void show_usage() {
 	std::cerr << "Usage: "
@@ -43,12 +44,11 @@ int main(int argc, char *argv[]) {
 
 	Mesh mesh = Mesh();
 	MeshReaderSU2 reader(inpath, &mesh); 
-	delete &reader;
+	reader.ReadFile();
 	MeshGenerator generator(&mesh);
 	generator.BuildMesh();
-	delete &generator;
-
-	delete &mesh;
+	MetricsGenerator metrics(&mesh);
+	metrics.Solve();
 	
 	return 0;
 }

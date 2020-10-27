@@ -23,6 +23,7 @@ void MeshGenerator::BuildMesh(){
 	this->SolveNode2ElementStart();
 	this->SolveNode2Element();
 	this->SolveElement2ElementStart();
+	this->SolveElement2FaceStart();
 	this->SolveFaceConnectivity();
 	this->SolveFace2Element();
 	this->SolveFace2Node();
@@ -30,29 +31,30 @@ void MeshGenerator::BuildMesh(){
 }
 
 void MeshGenerator::SolveNode2ElementStart(){
+	Logger::getInstance()->AddLog("______________________Debut code ESUP________________________\n\n",2);
 	int startI;
 	int endI;
 	int nodeI;
 	int j;
 
-    m_mesh->m_node2ElementStart = new int[m_mesh->m_nNode+1]();
+    (m_mesh->m_node2ElementStart) = new int[m_mesh->m_nNode+1]();
     // Looping over the elements to count the number of elements around each nodes
 	for (int elemi=0;elemi<m_mesh->m_nElement;++elemi){
 		// Starting and ending indices for the node connectivity
-		startI =m_mesh->m_element2NodeStart[elemi];
-		endI =m_mesh->m_element2NodeStart[elemi+1];
+		startI =(m_mesh->m_element2NodeStart)[elemi];
+		endI =(m_mesh->m_element2NodeStart)[elemi+1];
 
 		// Looping over the nodes of elementI
 		for (int i=startI;i<endI;++i){
-			nodeI = m_mesh->m_element2Node[i];
-			m_mesh->m_node2ElementStart[nodeI+1] += 1;
+			nodeI = (m_mesh->m_element2Node)[i];
+			(m_mesh->m_node2ElementStart)[nodeI+1] += 1;
 		}
 	}
 
 
 	// Setting up the start offset linked list
 	for (int i=1;i<m_mesh->m_nNode+1;++i){
-		m_mesh->m_node2ElementStart[i] += m_mesh->m_node2ElementStart[i-1];
+		(m_mesh->m_node2ElementStart)[i] += (m_mesh->m_node2ElementStart)[i-1];
 	}
 }
 
@@ -276,6 +278,13 @@ void MeshGenerator::SolveFaceConnectivity(){
 			faceCount += 1;
 		}
 	}
+
+	Logger::getInstance()->AddLog("element to face:",2);
+	std::string message;
+	for (int iElement = 0;iElement<m_mesh->m_element2ElementStart[m_mesh->m_nElement];iElement++){
+		Logger::getInstance()->AddLog(std::to_string(m_mesh->m_element2Face[iElement])+", ",2,false);
+	}
+	
 	//nBondFaces = m_mesh->m_nFace - m_mesh->m_nFaceInt;
 
 }

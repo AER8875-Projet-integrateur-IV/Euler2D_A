@@ -24,7 +24,9 @@ protected:
             element2Node[i] = element2Node_val[i]; 
         }    
 
-        marker.Set(&tag,&nElement,element2Node,element2NodeStart);
+        int* element2VTKId = new int[1];
+
+        marker.Set(&tag,&nElement,element2Node,element2NodeStart,element2VTKId);
 	}
 };
 

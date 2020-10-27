@@ -11,12 +11,12 @@ protected:
     int m_nElement;
     int* m_element2Node;
     int* m_element2NodeStart;
-
+    int* m_element2VTKId;
 public:
     Marker();
     ~Marker();
 
-    void Set(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart);
+    void Set(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart, int* element2VTKId);
     int GetNElement();
 };
 

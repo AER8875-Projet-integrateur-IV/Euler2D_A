@@ -13,9 +13,9 @@ MarkerContainer::~MarkerContainer()
 {
 }
 
-void MarkerContainer::AddMarker(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart)
+void MarkerContainer::AddMarker(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart, int* element2VTKId)
 {
-    (m_markers[m_nextEmptyMark]).Set(tag, nElement, element2Node, element2NodeStart);
+    (m_markers[m_nextEmptyMark]).Set(tag, nElement, element2Node, element2NodeStart, element2VTKId);
     m_nextEmptyMark++;
 }
 

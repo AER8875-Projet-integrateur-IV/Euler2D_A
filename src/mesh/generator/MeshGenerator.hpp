@@ -19,6 +19,11 @@ protected:
 	int m_nodeCount;
 
 	Mesh* m_mesh;
+	
+public:
+	MeshGenerator();
+	MeshGenerator(Mesh* mesh);
+	~MeshGenerator();
 
 	// Methods
 	void SolveNode2ElementStart();
@@ -32,10 +37,6 @@ protected:
 	void SolveFace2Element();
 	void SolveFace2Node();
 	
-public:
-	MeshGenerator();
-	MeshGenerator(Mesh* mesh);
-	~MeshGenerator();
-
 	void BuildMesh();
+
 };

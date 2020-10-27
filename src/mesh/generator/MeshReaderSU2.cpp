@@ -15,8 +15,16 @@
 #include <stdexcept>
 
 MeshReaderSU2::MeshReaderSU2(std::string meshPath, Mesh* mesh) {
-	m_parser = std::unique_ptr<Parser>(new Parser(meshPath, "%"));
+	m_parser = new Parser(meshPath, "%");
 	m_mesh = mesh;
+}
+MeshReaderSU2::MeshReaderSU2(){
+
+}
+
+MeshReaderSU2::~MeshReaderSU2(){
+	delete m_parser;
+	m_parser = NULL;
 }
 
 void MeshReaderSU2::ReadFile() {
@@ -32,7 +40,7 @@ void MeshReaderSU2::ReadFile() {
 		if (word == "NELEM="){
 			m_mesh->m_nElement = m_parser->ExtractNextInt();
 			Logger::getInstance()->AddLog("number of elements in the mesh= " + std::to_string(m_mesh->m_nElement),1);
-			this->ReadConnect(&m_mesh->m_nElement,m_mesh->m_element2Node,m_mesh->m_element2NodeStart);
+			this->ReadConnect(&m_mesh->m_nElement,&m_mesh->m_element2Node,&m_mesh->m_element2NodeStart,&m_mesh->m_element2VTKId);
 
 		} else if (word == "NPOIN=")
 		{
@@ -105,15 +113,20 @@ int MeshReaderSU2::VtkElem2NNode(int VTKid) {
 	return number_of_nodes;
 }
 
-void MeshReaderSU2::ReadConnect(int* nElement, int* element2Node, int* element2NodeStart) {
+
+
+void MeshReaderSU2::ReadConnect(int* nElement, int** element2Node, int** element2NodeStart, int** element2VTKId) {
 	int val;
 	int filePosition = m_parser->m_inFile.tellg();
 	int element2NodeSize = 0;
 	int nNode;
 
+	int* element2VTKId_temp= new int[*nElement];
+	*element2VTKId = element2VTKId_temp;
 	// Counting size of connectivity matrix
 	for (int ielem = 0; ielem < (*nElement); ielem++) {
 		val = m_parser->ExtractNextInt();
+		(*element2VTKId)[ielem] = val;
 		nNode = MeshReaderSU2::VtkElem2NNode(val);
 		element2NodeSize += nNode;
 		m_parser->m_inFile.unget();
@@ -123,12 +136,14 @@ void MeshReaderSU2::ReadConnect(int* nElement, int* element2Node, int* element2N
 
 
 	// Filling of the connectivity matrix
-	element2Node= new int[element2NodeSize];
-	element2NodeStart= new int[(*nElement)+1];
+	int* element2Node_temp = new int[element2NodeSize];
+	*element2Node = element2Node_temp;
+	int* element2NodeStart_temp = new int[(*nElement)+1];
+	*element2NodeStart = element2NodeStart_temp;
 
 	int element2NodeCurrentStart = 0;
 
-	element2NodeStart[0] = 0;
+	(*element2NodeStart)[0] = 0;
 	for (int ielem = 0; ielem < (*nElement); ielem++) {
 		
 
@@ -137,12 +152,12 @@ void MeshReaderSU2::ReadConnect(int* nElement, int* element2Node, int* element2N
 
 		for (int iNode = 0; iNode < nNode; iNode++) {
 			val = m_parser->ExtractNextInt();
-			element2Node[element2NodeCurrentStart] = val;
+			(*element2Node)[element2NodeCurrentStart] = val;
 			element2NodeCurrentStart++;
 		}
 		m_parser->m_inFile.unget();
 		m_parser->GetNextNonNullLine();
-		element2NodeStart[ielem+1] = element2NodeCurrentStart;
+		(*element2NodeStart)[ielem+1] = element2NodeCurrentStart;
 	}
 }
 
@@ -155,16 +170,17 @@ void MeshReaderSU2::ReadMarks() {
 	int nElement;
 	int* element2Node;
 	int* element2NodeStart;
-	
+	int* element2VTKId;
+
 	for(int iMark = 0; iMark<nMark;iMark++){
 		m_parser->GetNextWord();
 		tag = m_parser->GetNextWord();
 		m_parser->GetNextWord();
 		nElement = m_parser->ExtractNextInt();
 
-		this->ReadConnect(&nElement,element2Node,element2NodeStart);
+		this->ReadConnect(&nElement,&element2Node,&element2NodeStart, &element2VTKId);
 
-		m_mesh->m_markers->AddMarker(&tag, &nElement, element2Node, element2NodeStart);
+		m_mesh->m_markers->AddMarker(&tag, &nElement, element2Node, element2NodeStart, element2VTKId);
 	}
 
 }

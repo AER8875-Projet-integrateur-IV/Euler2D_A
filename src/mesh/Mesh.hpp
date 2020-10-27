@@ -18,6 +18,8 @@ public:
 	int* m_element2Node;
 	int* m_element2NodeStart;	
 	
+	int* m_element2VTKId; 	// Stores type of element according to VTK format
+
 	int* m_node2Element;
 	int* m_node2ElementStart;	
 	
@@ -44,4 +46,5 @@ public:
 	Mesh();
 	~Mesh();
 
+	//void Element2NodeVectors(int iElement, int nLocalNode, double* v);
 };
