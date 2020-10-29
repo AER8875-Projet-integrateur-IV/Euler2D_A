@@ -5,6 +5,10 @@
 
 Marker::Marker()
 {
+	m_element2Node = NULL;
+	m_element2NodeStart = NULL;
+	m_element2VTKId = NULL;
+	m_containingFaces = NULL;
 }
 
 Marker::~Marker()
@@ -54,7 +58,7 @@ int Marker::Check4Face(int* nodes, int nnode, int nface){
 		m_containingFaces[m_containingFacesNextEmptyIndex] = nface;
 		return 0;
 	} else{
-		return 0;
+		return 1;
 	}
 	
 }
@@ -91,9 +95,11 @@ int Marker::AreArraysEqual(int* ar1, int* ar2, int length){
 void Marker::Update(){
 
 }
+
 void Marker::Update_farfield(){
 
 }
+
 void Marker::Update_wall(){
 
 }
