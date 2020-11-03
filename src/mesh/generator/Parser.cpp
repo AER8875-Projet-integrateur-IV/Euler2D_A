@@ -29,8 +29,9 @@ int Parser::ExtractNextInt() {
 
 double Parser::ExtractNextDouble() {
 	double val;
-	std::regex e("-?[0-9]+\\.?[0-9]+");
-	val = std::stod(this->FindNextMatchingString(&e));
+	// std::regex e("-?[0-9]+\\.?[0-9]+");
+	// val = std::stod(this->FindNextMatchingString(&e));
+	val = std::stod(this->GetNextWord());
 	return val;
 }
 
@@ -50,6 +51,9 @@ std::string Parser::GetNextWord() {
 	while (1)
 	{
 		filePosition = m_inFile.tellg();
+		if (filePosition == -1){
+			throw "End of file";
+		}
 		m_inFile >> word;
 		if (word.rfind(m_commentString, 0) == 0) {
 			m_inFile.seekg(filePosition);
