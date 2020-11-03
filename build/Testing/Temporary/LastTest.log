@@ -1,0 +1,375 @@
+Start testing: Nov 02 14:50 EST
+----------------------------------------------------------
+1/14 Testing: MarkerTEST.GetNElement
+1/14 Test: MarkerTEST.GetNElement
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/test_Marker" "--gtest_filter=MarkerTEST.GetNElement" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh
+"MarkerTEST.GetNElement" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MarkerTEST.GetNElement
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MarkerTEST
+[ RUN      ] MarkerTEST.GetNElement
+<end of output>
+Test time =   0.27 sec
+----------------------------------------------------------
+Test Failed.
+"MarkerTEST.GetNElement" end time: Nov 02 14:50 EST
+"MarkerTEST.GetNElement" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/14 Testing: MeshReaderSU2NewFormatTEST.ReadFile
+2/14 Test: MeshReaderSU2NewFormatTEST.ReadFile
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshReader" "--gtest_filter=MeshReaderSU2NewFormatTEST.ReadFile" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshReaderSU2NewFormatTEST.ReadFile" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshReaderSU2NewFormatTEST.ReadFile
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshReaderSU2NewFormatTEST
+[ RUN      ] MeshReaderSU2NewFormatTEST.ReadFile
+[       OK ] MeshReaderSU2NewFormatTEST.ReadFile (23 ms)
+[----------] 1 test from MeshReaderSU2NewFormatTEST (23 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (23 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"MeshReaderSU2NewFormatTEST.ReadFile" end time: Nov 02 14:50 EST
+"MeshReaderSU2NewFormatTEST.ReadFile" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/14 Testing: ParserTEST.GetNextWord
+3/14 Test: ParserTEST.GetNextWord
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_Parser" "--gtest_filter=ParserTEST.GetNextWord" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"ParserTEST.GetNextWord" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = ParserTEST.GetNextWord
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ParserTEST
+[ RUN      ] ParserTEST.GetNextWord
+[       OK ] ParserTEST.GetNextWord (0 ms)
+[----------] 1 test from ParserTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"ParserTEST.GetNextWord" end time: Nov 02 14:50 EST
+"ParserTEST.GetNextWord" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/14 Testing: ParserTEST.GetNextNonNullLine
+4/14 Test: ParserTEST.GetNextNonNullLine
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_Parser" "--gtest_filter=ParserTEST.GetNextNonNullLine" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"ParserTEST.GetNextNonNullLine" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = ParserTEST.GetNextNonNullLine
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ParserTEST
+[ RUN      ] ParserTEST.GetNextNonNullLine
+[       OK ] ParserTEST.GetNextNonNullLine (0 ms)
+[----------] 1 test from ParserTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"ParserTEST.GetNextNonNullLine" end time: Nov 02 14:50 EST
+"ParserTEST.GetNextNonNullLine" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/14 Testing: ParserTEST.ExtractNextInt
+5/14 Test: ParserTEST.ExtractNextInt
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_Parser" "--gtest_filter=ParserTEST.ExtractNextInt" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"ParserTEST.ExtractNextInt" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = ParserTEST.ExtractNextInt
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ParserTEST
+[ RUN      ] ParserTEST.ExtractNextInt
+[       OK ] ParserTEST.ExtractNextInt (1 ms)
+[----------] 1 test from ParserTEST (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"ParserTEST.ExtractNextInt" end time: Nov 02 14:50 EST
+"ParserTEST.ExtractNextInt" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/14 Testing: ParserTEST.ExtractNextDouble
+6/14 Test: ParserTEST.ExtractNextDouble
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_Parser" "--gtest_filter=ParserTEST.ExtractNextDouble" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"ParserTEST.ExtractNextDouble" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = ParserTEST.ExtractNextDouble
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ParserTEST
+[ RUN      ] ParserTEST.ExtractNextDouble
+[       OK ] ParserTEST.ExtractNextDouble (1 ms)
+[----------] 1 test from ParserTEST (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"ParserTEST.ExtractNextDouble" end time: Nov 02 14:50 EST
+"ParserTEST.ExtractNextDouble" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/14 Testing: MeshGeneratorManualTEST.SolveNode2ElementStart
+7/14 Test: MeshGeneratorManualTEST.SolveNode2ElementStart
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.SolveNode2ElementStart" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.SolveNode2ElementStart" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.SolveNode2ElementStart
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.SolveNode2ElementStart
+[       OK ] MeshGeneratorManualTEST.SolveNode2ElementStart (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.SolveNode2ElementStart" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.SolveNode2ElementStart" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/14 Testing: MeshGeneratorManualTEST.SolveNode2Element
+8/14 Test: MeshGeneratorManualTEST.SolveNode2Element
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.SolveNode2Element" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.SolveNode2Element" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.SolveNode2Element
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.SolveNode2Element
+[       OK ] MeshGeneratorManualTEST.SolveNode2Element (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.SolveNode2Element" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.SolveNode2Element" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/14 Testing: MeshGeneratorManualTEST.SolveElement2ElementStart
+9/14 Test: MeshGeneratorManualTEST.SolveElement2ElementStart
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.SolveElement2ElementStart" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.SolveElement2ElementStart" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.SolveElement2ElementStart
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.SolveElement2ElementStart
+[       OK ] MeshGeneratorManualTEST.SolveElement2ElementStart (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.SolveElement2ElementStart" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.SolveElement2ElementStart" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/14 Testing: MeshGeneratorManualTEST.Solveelement2FaceStart
+10/14 Test: MeshGeneratorManualTEST.Solveelement2FaceStart
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.Solveelement2FaceStart" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.Solveelement2FaceStart" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.Solveelement2FaceStart
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.Solveelement2FaceStart
+[       OK ] MeshGeneratorManualTEST.Solveelement2FaceStart (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.Solveelement2FaceStart" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.Solveelement2FaceStart" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/14 Testing: MeshGeneratorManualTEST.CountFaces
+11/14 Test: MeshGeneratorManualTEST.CountFaces
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.CountFaces" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.CountFaces" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.CountFaces
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.CountFaces
+[       OK ] MeshGeneratorManualTEST.CountFaces (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.CountFaces" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.CountFaces" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/14 Testing: MeshGeneratorManualTEST.SolveFaceConnectivity
+12/14 Test: MeshGeneratorManualTEST.SolveFaceConnectivity
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.SolveFaceConnectivity" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.SolveFaceConnectivity" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.SolveFaceConnectivity
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.SolveFaceConnectivity
+[       OK ] MeshGeneratorManualTEST.SolveFaceConnectivity (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.SolveFaceConnectivity" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.SolveFaceConnectivity" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/14 Testing: MeshGeneratorManualTEST.SolveFace2Element
+13/14 Test: MeshGeneratorManualTEST.SolveFace2Element
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.SolveFace2Element" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.SolveFace2Element" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.SolveFace2Element
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.SolveFace2Element
+[       OK ] MeshGeneratorManualTEST.SolveFace2Element (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.SolveFace2Element" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.SolveFace2Element" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/14 Testing: MeshGeneratorManualTEST.SolveFace2Node
+14/14 Test: MeshGeneratorManualTEST.SolveFace2Node
+Command: "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator" "--gtest_filter=MeshGeneratorManualTEST.SolveFace2Node" "--gtest_also_run_disabled_tests"
+Directory: /home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator
+"MeshGeneratorManualTEST.SolveFace2Node" start time: Nov 02 14:50 EST
+Output:
+----------------------------------------------------------
+Running main() from /home/olivier/Documents/PI4/Euler2D_A/extern/googletest/googletest/src/gtest_main.cc
+Note: Google Test filter = MeshGeneratorManualTEST.SolveFace2Node
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MeshGeneratorManualTEST
+[ RUN      ] MeshGeneratorManualTEST.SolveFace2Node
+[       OK ] MeshGeneratorManualTEST.SolveFace2Node (0 ms)
+[----------] 1 test from MeshGeneratorManualTEST (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MeshGeneratorManualTEST.SolveFace2Node" end time: Nov 02 14:50 EST
+"MeshGeneratorManualTEST.SolveFace2Node" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 02 14:50 EST

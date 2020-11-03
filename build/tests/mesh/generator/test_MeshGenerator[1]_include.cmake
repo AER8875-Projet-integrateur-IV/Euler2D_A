@@ -1,0 +1,5 @@
+if(EXISTS "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator[1]_tests.cmake")
+  include("/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_MeshGenerator[1]_tests.cmake")
+else()
+  add_test(test_MeshGenerator_NOT_BUILT test_MeshGenerator_NOT_BUILT)
+endif()
