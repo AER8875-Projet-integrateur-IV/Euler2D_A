@@ -29,8 +29,9 @@ int Parser::ExtractNextInt() {
 
 double Parser::ExtractNextDouble() {
 	double val;
-	std::regex e("-?[0-9]+\\.?[0-9]+");
-	val = std::stod(this->FindNextMatchingString(&e));
+	// std::regex e("-?[0-9]+\\.?[0-9]+");
+	// val = std::stod(this->FindNextMatchingString(&e));
+	val = std::stod(this->GetNextWord());
 	return val;
 }
 

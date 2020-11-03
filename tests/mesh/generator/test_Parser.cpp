@@ -36,6 +36,10 @@ TEST_F(ParserTEST, ExtractNextInt) {
 }
 
 TEST_F(ParserTEST, ExtractNextDouble) {
+	parser.GetNextWord();
+	parser.GetNextWord();
+	parser.GetNextWord();
+	parser.GetNextWord();
 	double val = parser.ExtractNextDouble();
 	EXPECT_EQ(val, 10.1);
 
