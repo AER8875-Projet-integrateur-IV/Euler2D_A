@@ -48,3 +48,17 @@ void MarkerContainer::Check4Face(int* face2Node, int* face2NodeStart, int FirstB
         throw "No match was found for a border condition face in the available markers";
     }
 }
+
+void MarkerContainer::FindElements(Mesh* mesh){
+    // Find the associated elements
+    for(int iMark = 0; iMark<m_nMark;iMark++){
+        m_markers[iMark].FindElements(mesh);
+    }
+
+}
+
+void MarkerContainer::Update(Mesh* mesh, Solver* solver){
+    for(int iMark = 0; iMark<m_nMark;iMark++){
+        m_markers[iMark].Update(mesh, solver);
+    }
+}

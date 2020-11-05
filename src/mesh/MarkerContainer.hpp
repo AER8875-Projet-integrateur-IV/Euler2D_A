@@ -4,7 +4,9 @@
 #include<vector>
 #include<memory>
 
+class Mesh;
 class Marker;
+class Solver;
 
 class MarkerContainer
 {
@@ -21,6 +23,8 @@ public:
     // methods
     void AddMarker(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart, int* element2VTKId);
     void Check4Face(int* face2Node, int* face2NodeStart, int FirstBorderFace, int LastBorderFace);
+    void FindElements(Mesh* mesh);
     int GetNElement();
+    void Update(Mesh* mesh, Solver* solver);
 };
 
