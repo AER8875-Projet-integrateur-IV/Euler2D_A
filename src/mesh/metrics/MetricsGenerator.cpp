@@ -19,7 +19,6 @@ void MetricsGenerator::Solve(){
 	this->SolveVolume();
 	this->SolveFaceVector();
 	this->SolveElement2Center();
-	printf("\n%f\n ",m_mesh->m_element2Volume[5]);
 }
 
 void MetricsGenerator::SolveVolume(){
@@ -67,7 +66,7 @@ void MetricsGenerator::SolveVolume(){
 			throw std::invalid_argument(std::to_string(VTKId)+" is not a valid VTK element");
 		}
 		m_mesh->m_element2Volume[iElement] = volume;
-		printf("%f ",m_mesh->m_element2Volume[iElement]);
+		//printf("%f ",m_mesh->m_element2Volume[iElement]);
 	}
 	Logger::getInstance()->AddLog("Volumes calculated",1);
 }

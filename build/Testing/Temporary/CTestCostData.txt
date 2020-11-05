@@ -1,0 +1,16 @@
+MarkerTEST.GetNElement 0 0
+MeshReaderSU2NewFormatTEST.ReadFile 1 0.026455
+ParserTEST.GetNextWord 1 0.00304528
+ParserTEST.GetNextNonNullLine 1 0.00324765
+ParserTEST.ExtractNextInt 1 0.00338158
+ParserTEST.ExtractNextDouble 1 0.00358472
+MeshGeneratorManualTEST.SolveNode2ElementStart 1 0.00269988
+MeshGeneratorManualTEST.SolveNode2Element 1 0.0033018
+MeshGeneratorManualTEST.SolveElement2ElementStart 1 0.00255693
+MeshGeneratorManualTEST.Solveelement2FaceStart 1 0.00247472
+MeshGeneratorManualTEST.CountFaces 1 0.00250763
+MeshGeneratorManualTEST.SolveFaceConnectivity 1 0.00252656
+MeshGeneratorManualTEST.SolveFace2Element 1 0.00270363
+MeshGeneratorManualTEST.SolveFace2Node 1 0.00304371
+---
+MarkerTEST.GetNElement
