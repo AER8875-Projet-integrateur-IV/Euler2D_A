@@ -66,7 +66,7 @@ void MeshGenerator::SolveNode2Element(){
 
 	// Initializing the node to element linked list connectivity
 	m_mesh->m_node2Element = new int[m_mesh->m_element2NodeStart[m_mesh->m_nElement]]();
-	
+
 	// Array to save the increment
 	int store[m_mesh->m_nNode]={0};
 
@@ -112,9 +112,11 @@ void MeshGenerator::SolveElement2FaceStart(){
 void MeshGenerator::CountFaces(){
 	int numFaceBC = m_mesh->m_markers->GetNElement();
 	int sumTot = m_mesh->m_element2NodeStart[m_mesh->m_nElement];
+	
+	m_mesh->m_nElementTot = m_mesh->m_nElementTot+numFaceBC;
 
 	// A partir de sumTot et numFaceBC, il est possible de calculer le nombre de faces au total dans le maillage (sans double comptage)
-	m_mesh->m_nFace = (sumTot + numFaceBC) / 2;	
+	m_mesh->m_nFace = (sumTot + numFaceBC) / 2;
 	m_mesh->m_nFaceNoBoundaries = m_mesh->m_nFace-numFaceBC;
 }
 
@@ -285,7 +287,8 @@ void MeshGenerator::SolveFaceConnectivity(){
 	for (int iElement = 0;iElement<m_mesh->m_element2ElementStart[m_mesh->m_nElement];iElement++){
 		Logger::getInstance()->AddLog(std::to_string(m_mesh->m_element2Face[iElement])+", ",2,false);
 	}
-	
+	printf("\n");
+
 	//nBondFaces = m_mesh->m_nFace - m_mesh->m_nFaceInt;
 
 }
