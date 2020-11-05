@@ -28,15 +28,15 @@ int MarkerContainer::GetNElement()
     return nElement;
 }
 
-void MarkerContainer::Check4Face(int* face2Node, int* face2NodeStart, int FirstBorderFace, int LastBorderFace){
+void MarkerContainer::Check4Face(int* face2Node, int FirstBorderFace, int LastBorderFace){
     int match;
     int nnode;
     int* nodes;
     int nodeIndexStart, nodeIndexEnd;
 
     for(int iFace=FirstBorderFace;iFace<LastBorderFace;iFace++){
-        nodeIndexStart = face2NodeStart[iFace];
-        nodeIndexEnd = face2NodeStart[iFace+1];
+        nodeIndexStart = 2*iFace;
+        nodeIndexEnd = 2*iFace+1;
         nnode = nodeIndexEnd-nodeIndexStart;
         nodes = face2Node+nodeIndexStart;    
         for(int iMark = 0; iMark<m_nMark;iMark++){

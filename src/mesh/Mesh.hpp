@@ -11,6 +11,7 @@ public:
 	int m_nDime;
 	int m_nNode;
 	int m_nElement;
+	int m_nElementTot; 		// m_nElement + number of ghost cells
 	int m_nFace;   			// Number of faces without double counting
 	int m_nFaceInt;			// Number of internal faces with double counting
 	int m_nFaceNoBoundaries;// Number of internal faces without double counting

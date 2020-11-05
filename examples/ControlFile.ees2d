@@ -13,28 +13,7 @@ START
 MESH_FORMAT = SU2
 
 #Path to mesh file (from executable directory)
-MESH_FILE = /home/amin/Downloads/naca0012_129x129_1B_JAMESON.su2
-/home/amin/Downloads/naca0012_euler_513x513x1_O_1B.su2
-../../tests/naca0012_euler_65x65x1_O_1B.su2
-../../tests/testmeshSquare.su2
-/home/amin/Downloads/NACA0012_65_triangles.su2
-
-
-
-
-/home/amin/Downloads/NACA0012_5deg_6814.su2
-
-
-/home/amin/Downloads/square_5x5.su2
-
-
-
-/home/amin/Downloads/square_diagonalized_5x5.su2
-
-../../tests/testmesh.su2
-../../tests/naca0012_euler_65x65x1_O_1B.su2
-
-home/amin/Downloads/naca0012_euler_1025x1025x1_O_1B.su2
+MESH_FILE = ../examples/SU2/square_5x5.su2
 
 #Type of mesh. Options : STRUCTURED | UNSTRUCTURED
 MESH_TYPE = UNSTRUCTURED
@@ -90,10 +69,10 @@ OPEMMP_THREADS_NUM = 4
 
 -------------------- POST-PROCESSING CONTROL ----------------
 # Post processng file format . Options : TECPLOT | VTK
-OUTPUT_FORMAT = VTK
+OUTPUT_FORMAT = TECPLOT
 
 # Path to file output, from executable directory (without file extension)
-OUTPUT_FILE = ../../../Documents/bla.vtu
+OUTPUT_FILE = outputData.dat
 
 # generate log file . Options : TRUE | FALSE
 GENERATE_LOG = TRUE

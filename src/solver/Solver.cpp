@@ -1,14 +1,36 @@
 #include "Solver.hpp"
+#include <cmath>
 
-Solver::Solver(Mesh* mesh, InitialConditions* IC)
+Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 {
     m_mesh = mesh;
+	m_inputParameters = IC;
+    
+	double E = IC->m_Pressure/IC->m_Density/IC->m_Gamma+0.5*pow(m_Winf->v,2);
+	m_Winf->H=E+IC->m_Pressure/IC->m_Density;
+	m_Winf->P = IC->m_Pressure;
+	m_Winf->rho = IC->m_Density;
+	m_Winf->u = cos(IC->m_aoa*M_PI/180);
+	m_Winf->v = sin(IC->m_aoa*M_PI/180);
 
-    // Initialisation
+	// initialise element2W
+	m_element2W = new W[m_mesh->m_nElementTot];
+	for(int iElement = 0;iElement<m_mesh->m_nElementTot;iElement++){
+		m_element2W[iElement] = *m_Winf; 
+	}
+
+	// initialise face2Fc
+	m_face2Fc = new Fc[m_mesh->m_nFace];
+
+	// initialise markers
+	m_mesh->m_markers->Check4Face(m_mesh->m_face2Node, m_mesh->m_nFaceNoBoundaries*2, m_mesh->m_nFace*2);
+	m_mesh->m_markers->FindElements(m_mesh);
 }
 
 Solver::~Solver()
 {
+	delete[] m_element2W;
+	delete[] m_face2Fc;
 }
 
 
