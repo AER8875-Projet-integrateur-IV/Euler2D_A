@@ -9,12 +9,13 @@
 #include <string>
 #include "utils/logger/Logger.hpp"
 #include "mesh/metrics/MetricsGenerator.hpp"
+#include "InputParser.h"
 
 void show_usage() {
 	std::cerr << "Usage: "
 	          << "Options:\n"
 	          << "\t-h,--help\t\tShow this help message\n"
-	          << "\t-i,--input\tSpecify the file path for the SU2 path\n"
+	          << "\t-i,--input\tSpecify the file path for the EES2D Software Input file\n"
 			  << "\t-v,--verbose\tOutput debugging information\n"
 			  << "\t-vv,--veryverbose\tOutput EVERYTHING !?!?!?!?\n"
 	          << std::endl;
@@ -42,9 +43,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	ees2d::io::InputParser inputParameters{inpath};
+	inputParameters.parse();
+
 	Mesh mesh = Mesh();
 
-	MeshReaderSU2 reader(inpath, &mesh); 
+	MeshReaderSU2 reader(inputParameters.m_meshFile, &mesh); 
 	reader.ReadFile();
 
 	MeshGenerator generator(&mesh);
