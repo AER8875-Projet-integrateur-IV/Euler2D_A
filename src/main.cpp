@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
 	Mesh mesh = Mesh();
 
-	MeshReaderSU2 reader(inpath, &mesh); 
+	MeshReaderSU2 reader(inpath, &mesh);
 	reader.ReadFile();
 
 	MeshGenerator generator(&mesh);
@@ -52,22 +52,44 @@ int main(int argc, char *argv[]) {
 
 	MetricsGenerator metrics(&mesh);
 	metrics.Solve();
-	
+
 	printf("nFace = %2d \n",mesh.m_nFace);
+	printf("Face2Element = \n");
 	for (int i=0;i<mesh.m_nFace*2;i++){
 		printf("%2d ",mesh.m_face2Element[i]);
-		// std::cout<<to_string()<< " " <<std::endl;
 	}
-	
-	for (int i=0;i<mesh.m_nElement*2;i++){
-		//printf("%f ",metrics.m_mesh->m_element2Volume[i]);
-		//printf("\n");
-		//printf("%f ",metrics.m_mesh->m_element[i]);
-		//printf("\n");
-		//printf("%f ",metrics.m_mesh->m_element2Volume[i]);
-		//printf("\n");
-		// std::cout<<to_string()<< " " <<std::endl;
-	}
+	printf("\n");
+
+
+	// printf("element2volume = \n" );
+	// for (int i=0;i<mesh.m_nElement;i++){
+	// 	printf("%f ",metrics.m_mesh->m_element2Volume[i]);
+	// }
+	// printf("\n");
+	//
+	// printf("face2FaceVector = \n");
+	// for (int i=0;i<mesh.m_nFace*2;i++){
+	// 	printf("%f ",metrics.m_mesh->m_face2FaceVector[i]);
+	// }
+	// printf("\n");
+	//
+	// printf("face2Normal = \n");
+	// for (int i=0;i<mesh.m_nFace*2;i++){
+	// 	printf("%f ",metrics.m_mesh->m_face2Normal[i]);
+	// }
+	// printf("\n");
+	//
+	// printf("face2Area = \n");
+	// for (int i=0;i<mesh.m_nFace;i++){
+	// 	printf("%f ",metrics.m_mesh->m_face2Area[i]);
+	// }
+	// printf("\n");
+	//
+	// printf("element2Center = \n");
+	// for (int i=0;i<mesh.m_nElement*2;i++){
+	// 	printf("%f ",metrics.m_mesh->m_element2Center[i]);
+	// }
+	// printf("\n");
 
 
 	return 0;

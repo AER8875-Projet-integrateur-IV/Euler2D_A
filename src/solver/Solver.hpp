@@ -13,22 +13,23 @@ struct Fc
     double v;
     double H;
 };
-    
+
 struct W
 // Valeur storée dans les éléments
 {
     double P;
-    double rho;
+	double H;
+	double rho;
     double u;
     double v;
 };
-    
+
 class Solver
 {
 private:
     Mesh* m_mesh;
-    Fc* m_face2Fc; 
-    W* m_element2W;
+	Fc *m_face2Fc;
+	W* m_element2W;
 
 public:
     Solver(Mesh* mesh, InitialConditions* IC);
@@ -36,5 +37,3 @@ public:
 
     void SolveFc();
 };
-
-
