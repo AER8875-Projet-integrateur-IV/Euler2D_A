@@ -11,7 +11,6 @@ struct Fc
     double rho;
     double u;
     double v;
-	double P;
 	double H;
 };
 
@@ -20,7 +19,7 @@ struct W
 {
 	double rho;
 	double u;
-    double v;
+	double v;
 	double P;
 	double H;
 };
@@ -39,4 +38,5 @@ public:
     void SolveFc();
 	void ConvectiveFluxAverageScheme(int iFace);
 	void ConvectiveFluxRoeScheme(int iFace);
+	void DotProduct(int elem1, int elem2);
 };

@@ -17,7 +17,10 @@ int elem1, elem2;
 double rho_avg, u_avg, v_avg, H_avg, V;
 
 void Solver::SolveFc(){
-    // Calcul Fc interne
+	// while (residuals>minresiduals && iteration<MaxIteration)
+
+
+	// Calcul Fc interne
     for(int iFace = 0;iFace<m_mesh->m_nFaceNoBoundaries;iFace++){
         // Calcul Fc
 
@@ -154,4 +157,23 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	this->m_face2Fc[iFace].u = rhouV_Fc;
 	this->m_face2Fc[iFace].v = rhovV_Fc;
 	this->m_face2Fc[iFace].H = rhoHV_Fc;
+}
+
+void Solver::DotProduct(iFace, elem1, elem2) {
+	//Calcul du produit scalaire pour savoir s'il faut changer le sens de la normale a la face
+	double xElem1 = m_mesh->m_element2Center[2 * elem1 + 0];
+	double yElem1 = m_mesh->m_element2Center[2 * elem1 + 1];
+
+	double xElem2 = m_mesh->m_element2Center[2 * elem2 + 0];
+	double yElem2 = m_mesh->m_element2Center[2 * elem2 + 1];
+
+	double xVecteur = xElem2 - xElem1;
+	double yVecteur = yElem2 - yElem1;
+
+	double dotProduct = xVecteur * m_mesh->m_face2Normal[2 * iFace + 0] + yVecteur * m_mesh->m_face2Normal[2 * iFace + 1];
+
+	if (dotProduct < 0) {//TODO a verifier pour cette condition
+		m_mesh->m_face2Normal[2 * iFace + 0] *= -1;
+		m_mesh->m_face2Normal[2 * iFace + 1] *= -1;
+	}
 }
