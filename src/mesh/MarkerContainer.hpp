@@ -22,7 +22,7 @@ public:
 
     // methods
     void AddMarker(std::string* tag, int* nElement, int* element2Node, int* element2NodeStart, int* element2VTKId);
-    void Check4Face(int* face2Node, int FirstBorderFace, int LastBorderFace);
+    void Check4Face(int* face2Node, int nFace);
     void FindElements(Mesh* mesh);
     int GetNElement();
     void Update(Mesh* mesh, Solver* solver);

@@ -2,18 +2,21 @@
 #define TECPLOTWRITER_H
 
 #include "../mesh/Mesh.hpp"
+#include "../solver/Solver.hpp"
 #include <fstream>
 #include <vector>
+
 
 class TecplotWriter
 {
 private:
     Mesh* m_mesh;
+    Solver* m_solver;
     std::ofstream m_outfile;
 
 public:
     TecplotWriter();
-    TecplotWriter(Mesh* Mesh);
+    TecplotWriter(Mesh* Mesh, Solver* solver);
 
     ~TecplotWriter();
 

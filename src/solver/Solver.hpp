@@ -16,6 +16,7 @@ struct Fc
 struct W
 // Valeur storée dans les éléments et ghost elements
 {
+    W() : P(0), H(0), rho(0), u(0), v(0) {}
     double P;
 	double H;
 	double rho;

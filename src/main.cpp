@@ -11,6 +11,7 @@
 #include "mesh/metrics/MetricsGenerator.hpp"
 #include "postprocessing/TecplotWriter.hpp"
 #include "InputParser.h"
+#include "solver/Solver.hpp"
 
 void show_usage() {
 	std::cerr << "Usage: "
@@ -46,6 +47,7 @@ int main(int argc, char *argv[]) {
 
 	ees2d::io::InputParser inputParameters{inpath};
 	inputParameters.parse();
+	inputParameters.printAll();
 
 	Mesh mesh = Mesh();
 
@@ -58,8 +60,10 @@ int main(int argc, char *argv[]) {
 	MetricsGenerator metrics(&mesh);
 	metrics.Solve();
 	
-	std::vector<std::string> options{"volume"};
-	TecplotWriter writer(&mesh);
+	Solver solver(&mesh, &inputParameters);
+
+	std::vector<std::string> options{"volume","pressure"};
+	TecplotWriter writer(&mesh, &solver);
 	writer.DrawMesh("test.dat", options);
 
 	return 0;

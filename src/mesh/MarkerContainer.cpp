@@ -1,6 +1,8 @@
 #include "MarkerContainer.hpp"
 #include "Marker.hpp"
 #include <memory>
+#include <iostream>
+#include <string>
 
 MarkerContainer::MarkerContainer(int nMark)
 {
@@ -28,24 +30,21 @@ int MarkerContainer::GetNElement()
     return nElement;
 }
 
-void MarkerContainer::Check4Face(int* face2Node, int FirstBorderFace, int LastBorderFace){
+void MarkerContainer::Check4Face(int* face2Node, int nFace){
     int match;
     int nnode;
-    int* nodes;
-    int nodeIndexStart, nodeIndexEnd;
+    int nodes[2];
 
-    for(int iFace=FirstBorderFace;iFace<LastBorderFace;iFace++){
-        nodeIndexStart = 2*iFace;
-        nodeIndexEnd = 2*iFace+1;
-        nnode = nodeIndexEnd-nodeIndexStart;
-        nodes = face2Node+nodeIndexStart;    
+    for(int iFace=0;iFace<nFace;iFace++){
+        nodes[0] = face2Node[iFace*2+0];
+        nodes[1] = face2Node[iFace*2+1];    
         for(int iMark = 0; iMark<m_nMark;iMark++){
-            match = m_markers[iMark].Check4Face(nodes,nnode,iFace);
+            match = m_markers[iMark].Check4Face(nodes,2,iFace);
             if(match == 0){
                 break;
             }
         }
-        throw "No match was found for a border condition face in the available markers";
+        //throw std::logic_error("No match was found for a border condition face in the available markers");
     }
 }
 

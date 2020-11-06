@@ -1,5 +1,6 @@
 #include "TecplotWriter.hpp"
 #include "../mesh/Mesh.hpp"
+#include "../solver/Solver.hpp"
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -9,9 +10,10 @@ TecplotWriter::TecplotWriter(/* args */)
 {
 }
 
-TecplotWriter::TecplotWriter(Mesh* mesh)
+TecplotWriter::TecplotWriter(Mesh* mesh, Solver* solver)
 {
     m_mesh = mesh;
+    m_solver = solver;
 }
 
 TecplotWriter::~TecplotWriter()
@@ -54,7 +56,7 @@ void TecplotWriter::WriteNewZone(std::vector<std::string> options){
         int start = m_mesh->m_nDime+1;
         for(int i = start; i < start+options.size(); i++){
             m_outfile << "[" << std::to_string(i) << "]=CELLCENTERED";
-            if(!i==start+options.size()-1){
+            if(i!=start+options.size()-1){
                 m_outfile << ",";
             }
         }        
@@ -82,7 +84,11 @@ void TecplotWriter::WriteVar(std::vector<std::string> options){
             for(int iElement = 0; iElement<m_mesh->m_nElement; iElement++){
                 m_outfile << std::to_string(m_mesh->m_element2Volume[iElement]) << "\n";
             }
-        } else{
+        } else if(var=="pressure"){
+            for(int iElement = 0; iElement<m_mesh->m_nElement; iElement++){
+                m_outfile << std::to_string(m_solver->m_element2W[iElement].P) << "\n";
+            }
+        }else{
             throw;
         }       
     }
