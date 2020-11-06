@@ -28,8 +28,6 @@ class Solver
 private:
     Mesh* m_mesh; 
     ees2d::io::InputParser* m_inputParameters;
-	Fc *m_face2Fc;
-	W *m_element2W;
 
 public:
     Fc* m_face2Fc; 
