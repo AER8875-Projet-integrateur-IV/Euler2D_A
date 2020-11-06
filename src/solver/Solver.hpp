@@ -10,17 +10,17 @@ struct Fc
     double rho;
     double u;
     double v;
-    double H;
+	double H;
 };
 
 struct W
 // Valeur storée dans les éléments et ghost elements
 {
-    double P;
-	double H;
 	double rho;
-    double u;
-    double v;
+	double u;
+	double v;
+	double P;
+	double H;
 };
 
 class Solver
@@ -28,6 +28,8 @@ class Solver
 private:
     Mesh* m_mesh; 
     ees2d::io::InputParser* m_inputParameters;
+	Fc *m_face2Fc;
+	W *m_element2W;
 
 public:
     Fc* m_face2Fc; 
@@ -38,4 +40,7 @@ public:
     ~Solver();
 
     void SolveFc();
+	void ConvectiveFluxAverageScheme(int iFace);
+	void ConvectiveFluxRoeScheme(int iFace);
+	void DotProduct(int elem1, int elem2);
 };
