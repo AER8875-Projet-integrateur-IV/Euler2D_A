@@ -10,7 +10,7 @@ $ make
 
 executable is found in build/src
 example running command:
-$ src/Euler2D_A -i ../examples/SU2/square_5x5.su2 -vv
+$ src/Euler2D_A -i ../examples/ControlFile.ees2d -vv
 
 Run tests with 
 $ make test

@@ -9,7 +9,9 @@
 #include <string>
 #include "utils/logger/Logger.hpp"
 #include "mesh/metrics/MetricsGenerator.hpp"
+#include "postprocessing/TecplotWriter.hpp"
 #include "InputParser.h"
+#include "solver/Solver.hpp"
 
 void show_usage() {
 	std::cerr << "Usage: "
@@ -45,6 +47,7 @@ int main(int argc, char *argv[]) {
 
 	ees2d::io::InputParser inputParameters{inpath};
 	inputParameters.parse();
+	inputParameters.printAll();
 
 	Mesh mesh = Mesh();
 
@@ -56,45 +59,12 @@ int main(int argc, char *argv[]) {
 
 	MetricsGenerator metrics(&mesh);
 	metrics.Solve();
+	
+	Solver solver(&mesh, &inputParameters);
 
-	printf("nFace = %2d \n",mesh.m_nFace);
-	printf("Face2Element = \n");
-	for (int i=0;i<mesh.m_nFace*2;i++){
-		printf("%2d ",mesh.m_face2Element[i]);
-	}
-	printf("\n");
-
-
-	// printf("element2volume = \n" );
-	// for (int i=0;i<mesh.m_nElement;i++){
-	// 	printf("%f ",metrics.m_mesh->m_element2Volume[i]);
-	// }
-	// printf("\n");
-	//
-	// printf("face2FaceVector = \n");
-	// for (int i=0;i<mesh.m_nFace*2;i++){
-	// 	printf("%f ",metrics.m_mesh->m_face2FaceVector[i]);
-	// }
-	// printf("\n");
-	//
-	// printf("face2Normal = \n");
-	// for (int i=0;i<mesh.m_nFace*2;i++){
-	// 	printf("%f ",metrics.m_mesh->m_face2Normal[i]);
-	// }
-	// printf("\n");
-	//
-	// printf("face2Area = \n");
-	// for (int i=0;i<mesh.m_nFace;i++){
-	// 	printf("%f ",metrics.m_mesh->m_face2Area[i]);
-	// }
-	// printf("\n");
-	//
-	// printf("element2Center = \n");
-	// for (int i=0;i<mesh.m_nElement*2;i++){
-	// 	printf("%f ",metrics.m_mesh->m_element2Center[i]);
-	// }
-	// printf("\n");
-
+	std::vector<std::string> options{"volume","pressure"};
+	TecplotWriter writer(&mesh, &solver);
+	writer.DrawMesh("test.dat", options);
 
 	return 0;
 }

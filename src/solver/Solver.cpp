@@ -1,19 +1,26 @@
 #include "Solver.hpp"
 #include <cmath>
 #include <stdlib.h>//pour la valeur absolue
-//>>>>>>> 04dc0e12a34315b25e2f3f0c4f4cbb8e89271ac6
+#include "../utils/logger/Logger.hpp"
+#include <string>
+#include <iostream>
 
 Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 {
+	Logger::getInstance()->AddLog("________________________Solver initialisation________________________",1);
     m_mesh = mesh;
 	m_inputParameters = IC;
+    
+	Logger::getInstance()->AddLog("solving initial conditions...",1);
 
-	double E = IC->m_Pressure/IC->m_Density/IC->m_Gamma+0.5*pow(m_Winf->v,2);
+	m_Winf = new W();
+
+	double E = IC->m_Pressure/IC->m_Density/IC->m_Gamma+0.5*pow(IC->m_Mach,2);
 	m_Winf->H=E+IC->m_Pressure/IC->m_Density;
 	m_Winf->P = IC->m_Pressure;
 	m_Winf->rho = IC->m_Density;
-	m_Winf->u = cos(IC->m_aoa*M_PI/180);
-	m_Winf->v = sin(IC->m_aoa*M_PI/180);
+	m_Winf->u = cos(IC->m_aoa*M_PI/180)*IC->m_Mach;
+	m_Winf->v = sin(IC->m_aoa*M_PI/180)*IC->m_Mach;
 
 	// initialise element2W
 	m_element2W = new W[m_mesh->m_nElementTot];
@@ -24,8 +31,11 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	// initialise face2Fc
 	m_face2Fc = new Fc[m_mesh->m_nFace];
 
+
 	// initialise markers
-	m_mesh->m_markers->Check4Face(m_mesh->m_face2Node, m_mesh->m_nFaceNoBoundaries*2, m_mesh->m_nFace*2);
+	Logger::getInstance()->AddLog("Defining the type of the border conditions face elements...",1);
+	m_mesh->m_markers->Check4Face(m_mesh->m_face2Node, m_mesh->m_nFace);
+	Logger::getInstance()->AddLog("Defining the type of the border conditions ghost cells...",1);
 	m_mesh->m_markers->FindElements(m_mesh);
 }
 
@@ -33,6 +43,7 @@ Solver::~Solver()
 {
 	delete[] m_element2W;
 	delete[] m_face2Fc;
+	delete m_Winf;
 }
 
 

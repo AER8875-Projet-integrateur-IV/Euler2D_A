@@ -5,6 +5,9 @@
 #include <cmath>
 #include "Mesh.hpp"
 #include "../solver/Solver.hpp"
+#include <stdexcept>
+#include <iostream>
+#include <string>
 
 Marker::Marker()
 {
@@ -57,26 +60,31 @@ int Marker::GetNElement()
 }
 
 int Marker::Check4Face(int* nodes, int nnode, int nface){
-	int* bNodes;
-	int bNodeEndIndex, bNodeIndex;
-	int bNNode;
+	int bNodes[2];
+	// int bNodeEndIndex, bNodeIndex;
+	// int bNNode;
 	int match;
 	for (int iElement = 0; iElement < m_nElement; iElement++)
 	{
-		bNodeIndex = m_element2NodeStart[iElement];
-		bNodeEndIndex=m_element2NodeStart[iElement+1];
-		bNNode = bNodeEndIndex-bNodeIndex;
-		if (nnode != bNNode){
-			continue;
-		}
-		bNodes = m_element2Node+bNodeIndex;
+		// bNodeIndex = m_element2NodeStart[iElement];
+		// bNodeEndIndex=m_element2NodeStart[iElement+1];
+		// bNNode = bNodeEndIndex-bNodeIndex;
+		// if (nnode != bNNode){
+		// 	continue;
+		// }
+		bNodes[0] = m_element2Node[2*iElement+0];
+		bNodes[1] = m_element2Node[2*iElement+1];
 
 		// Check array equality
-		match = this->AreArraysEqual(nodes, bNodes, bNNode);
-		
+		match = this->AreArraysEqual(nodes, bNodes, 2);
+		if(match == 0){
+			break;
+		}
+
 	}
 	if(match == 0){
 		m_containingFaces[m_containingFacesNextEmptyIndex] = nface;
+		m_containingFacesNextEmptyIndex++;
 		return 0;
 	} else{
 		return 1;
@@ -125,7 +133,9 @@ void Marker::FindElements(Mesh* mesh){
 			m_containingElement[i] = iElement2;
 			m_ghostElement[i] = iElement1;
 		} else{
-			throw "The two elements on either sides of the face are equal";
+			std::cout << std::to_string(iElement1) << " : " << std::to_string(iElement2) << " - face " << std::to_string(iFace) 
+			<< " - i " << std::to_string(i) << std::endl;
+			throw std::logic_error("The two elements on either sides of the face are equal");
 		}
 	}
 }
@@ -171,13 +181,13 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 		if(velocity>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
 		} else{				// subsonic
-			throw "not implemented";
+			throw std::logic_error("subsonic condition not implemented");
 		}
 	} else{					// inflow
 		if(velocity>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = *(solver->m_Winf);
 		} else{				// subsonic
-			throw "not implemented";
+			throw std::logic_error("subsonic condition not implemented");
 		}
 	}
 }

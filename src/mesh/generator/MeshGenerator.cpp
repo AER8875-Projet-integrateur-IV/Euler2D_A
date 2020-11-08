@@ -113,7 +113,7 @@ void MeshGenerator::CountFaces(){
 	int numFaceBC = m_mesh->m_markers->GetNElement();
 	int sumTot = m_mesh->m_element2NodeStart[m_mesh->m_nElement];
 	
-	m_mesh->m_nElementTot = m_mesh->m_nElementTot+numFaceBC;
+	m_mesh->m_nElementTot = m_mesh->m_nElement+numFaceBC;
 
 	// A partir de sumTot et numFaceBC, il est possible de calculer le nombre de faces au total dans le maillage (sans double comptage)
 	m_mesh->m_nFace = (sumTot + numFaceBC) / 2;
@@ -143,6 +143,7 @@ void MeshGenerator::SolveFaceConnectivity(){
 	// La longueur de la liste correspond a la somme du nombre de noeuds par face
 	// Dans l'exemple presente dans le manuel, le nombre de noeuds par face est 2 pour chacune des faces (le cas pour tous les maillages 2D)
 	int numNodePerFace[m_mesh->m_nFace];// Idealement cet array est une sortie de MeshReader
+	m_longueurFace2node = 0;
 	for (int i = 0; i < m_mesh->m_nFace; ++i) {
 		numNodePerFace[i] = 2;
 		m_longueurFace2node += numNodePerFace[i];
