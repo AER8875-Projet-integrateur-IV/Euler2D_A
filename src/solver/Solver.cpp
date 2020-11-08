@@ -1,15 +1,13 @@
 #include "Solver.hpp"
-<<<<<<< HEAD
 #include <cmath>
-=======
 #include <stdlib.h>//pour la valeur absolue
->>>>>>> 04dc0e12a34315b25e2f3f0c4f4cbb8e89271ac6
+//>>>>>>> 04dc0e12a34315b25e2f3f0c4f4cbb8e89271ac6
 
 Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 {
     m_mesh = mesh;
 	m_inputParameters = IC;
-    
+
 	double E = IC->m_Pressure/IC->m_Density/IC->m_Gamma+0.5*pow(m_Winf->v,2);
 	m_Winf->H=E+IC->m_Pressure/IC->m_Density;
 	m_Winf->P = IC->m_Pressure;
@@ -20,7 +18,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	// initialise element2W
 	m_element2W = new W[m_mesh->m_nElementTot];
 	for(int iElement = 0;iElement<m_mesh->m_nElementTot;iElement++){
-		m_element2W[iElement] = *m_Winf; 
+		m_element2W[iElement] = *m_Winf;
 	}
 
 	// initialise face2Fc
