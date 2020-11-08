@@ -42,5 +42,5 @@ public:
     void SolveFc();
 	void ConvectiveFluxAverageScheme(int iFace);
 	void ConvectiveFluxRoeScheme(int iFace);
-	void DotProduct(int elem1, int elem2);
+	void DotProduct(int iFace,int elem1,int  elem2);
 };
