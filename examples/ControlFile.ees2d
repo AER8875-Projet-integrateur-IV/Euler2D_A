@@ -55,7 +55,7 @@ SPECIFIC_HEAT = 1004.7
 
 ------------------- SOLVER CONTROL ------------------------
 
-# Discretization of the Convective Fluxes . Options : ROE | AUSM (not implement yet)
+# Discretization of the Convective Fluxes . Options : ROE | AVERAGE | AUSM (not implement yet)
 SCHEME = ROE
 
 # Minimum residual to stop solver

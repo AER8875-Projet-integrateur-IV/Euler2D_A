@@ -37,6 +37,17 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	m_mesh->m_markers->Check4Face(m_mesh->m_face2Node, m_mesh->m_nFace);
 	Logger::getInstance()->AddLog("Defining the type of the border conditions ghost cells...",1);
 	m_mesh->m_markers->FindElements(m_mesh);
+
+	// Chose Scheme
+	std::string schemeName = IC->m_scheme;
+	if(schemeName=="AVERAGE"){
+		m_scheme = &Solver::ConvectiveFluxAverageScheme;
+	} else if(schemeName=="ROE"){
+		m_scheme = &Solver::ConvectiveFluxRoeScheme;
+	} else
+	{
+		throw std::logic_error(schemeName + " scheme not implemented");
+	}	
 }
 
 Solver::~Solver()
@@ -57,10 +68,8 @@ void Solver::SolveFc(){
 	// Calcul Fc interne
     for(int iFace = 0;iFace<m_mesh->m_nFaceNoBoundaries;iFace++){
         // Calcul Fc
+		(this->*m_scheme)(iFace);
 
-		//this->ConvectiveFluxAverageScheme(iFace);
-
-		this->ConvectiveFluxRoeScheme(iFace);
 	}
 
 	// m_mesh->m_markers.update()

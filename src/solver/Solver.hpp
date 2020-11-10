@@ -31,6 +31,9 @@ private:
     Mesh* m_mesh; 
     ees2d::io::InputParser* m_inputParameters;
 
+    // pointer to the chosen calculation scheme
+    void (Solver::*m_scheme)(int iFace);
+
 public:
     Fc* m_face2Fc; 
     W* m_element2W;
@@ -40,7 +43,12 @@ public:
     ~Solver();
 
     void SolveFc();
+
+    // Average scheme
 	void ConvectiveFluxAverageScheme(int iFace);
-	void ConvectiveFluxRoeScheme(int iFace);
-	void DotProduct(int iFace,int elem1,int  elem2);
+	
+    // Row scheme
+    void ConvectiveFluxRoeScheme(int iFace);
+	
+    void DotProduct(int iFace,int elem1,int  elem2);
 };
