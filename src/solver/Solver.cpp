@@ -286,7 +286,7 @@ double Solver::LocalTimeStep(int iElem) {
 
 	// 1.2 Calcul des lambdas
 	double lambda_Cx, lambda_Cy;
-	doule c = pow(m_inputParameters->m_Gamma * this->m_element2W[iElem].P / this->m_element2W[iElem].rho, 0.5);
+	double c = pow(m_inputParameters->m_Gamma * this->m_element2W[iElem].P / this->m_element2W[iElem].rho, 0.5);
 	lambda_Cx = 0.5 * (std::abs(this->m_element2W[iElem].u) + c) * Sum_Sx;
 	lambda_Cy = 0.5 * (std::abs(this->m_element2W[iElem].v) + c) * Sum_Sy;
 

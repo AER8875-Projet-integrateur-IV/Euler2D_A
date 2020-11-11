@@ -74,7 +74,7 @@ public:
 
 	// Solver itself
 	// Dot Product
-	void DotProduct(int iFace,int elem1,int  elem2);
+	void DotProduct(int iFace);
 	// TimeStep
 	double LocalTimeStep(int iElem);
 	// Residuals
