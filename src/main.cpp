@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 
 	Mesh mesh = Mesh();
 
-	MeshReaderSU2 reader(inputParameters.m_meshFile, &mesh); 
+	MeshReaderSU2 reader(inputParameters.m_meshFile, &mesh);
 	reader.ReadFile();
 
 	MeshGenerator generator(&mesh);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
 	MetricsGenerator metrics(&mesh);
 	metrics.Solve();
-	
+
 	Solver solver(&mesh, &inputParameters);
 
 	std::vector<std::string> options{"volume","pressure"};
