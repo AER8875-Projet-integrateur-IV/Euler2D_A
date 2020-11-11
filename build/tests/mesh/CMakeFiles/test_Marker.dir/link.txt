@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/test_Marker.dir/test_Marker.cpp.o  -o test_Marker  ../../lib/libgtestd.a ../../lib/libgmockd.a ../../lib/libgtest_maind.a ../../src/mesh/libMesh.a ../../lib/libgtestd.a -lpthread ../../src/utils/logger/libLogger.a 

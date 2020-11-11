@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/olivier/Documents/PI4/Euler2D_A/src/utils/logger/Logger.cpp
+Logger.hpp
+/home/olivier/Documents/PI4/Euler2D_A/src/utils/logger/Logger.hpp
+iostream
+/home/olivier/Documents/PI4/Euler2D_A/src/utils/logger/iostream
+
+/home/olivier/Documents/PI4/Euler2D_A/src/utils/logger/Logger.hpp
+string
+-
+
