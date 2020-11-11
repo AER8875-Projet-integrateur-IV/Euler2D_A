@@ -1,5 +1,5 @@
 
-
+add_subdirectory(metrics)
 add_subdirectory(generator)
 
 set(TESTNAME test_Marker)                                 # Name for this test executable
