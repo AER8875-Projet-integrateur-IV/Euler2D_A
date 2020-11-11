@@ -10,7 +10,7 @@
 #include "utils/logger/Logger.hpp"
 #include "mesh/metrics/MetricsGenerator.hpp"
 #include "postprocessing/TecplotWriter.hpp"
-#include "InputParser.h"
+#include "inputParser/InputParser.h"
 #include "solver/Solver.hpp"
 
 void show_usage() {
@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
 	metrics.Solve();
 	
 	Solver solver(&mesh, &inputParameters);
+	solver.SolveFc();
 
 	std::vector<std::string> options{"volume","pressure"};
 	TecplotWriter writer(&mesh, &solver);

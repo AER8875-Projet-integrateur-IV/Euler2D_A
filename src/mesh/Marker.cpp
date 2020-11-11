@@ -50,7 +50,8 @@ void Marker::DefineUpdateFunction(std::string borderType){
 		m_updateFunction = &Marker::Update_wall;
 	} else
 	{
-		// not implemented
+		// Border conditions are considered farfield by default
+		m_updateFunction = &Marker::Update_farfield;
 	}
 }
 

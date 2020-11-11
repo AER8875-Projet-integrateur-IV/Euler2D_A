@@ -7,7 +7,7 @@ macro(package_add_test TESTNAME SOURCE DEPENDANCIES)
     add_executable(${TESTNAME} ${SOURCE})
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} gtest gmock gtest_main ${DEPENDANCIES})
+    target_link_libraries(${TESTNAME} PUBLIC ${DEPENDANCIES} gtest gmock gtest_main)
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(${TESTNAME}
@@ -31,4 +31,5 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
 ###################################################
 
 # List of directories
+add_subdirectory(solver)
 add_subdirectory(mesh)

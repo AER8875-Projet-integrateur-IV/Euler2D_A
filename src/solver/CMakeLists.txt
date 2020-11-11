@@ -1,4 +1,5 @@
-add_library(Solver STATIC
+add_library(Solver
             Solver.cpp)
+target_link_libraries(Solver Logger Mesh InputParser)
 target_include_directories(Solver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

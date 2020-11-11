@@ -2,7 +2,7 @@
 #define SOLVER_H
 
 #include"../mesh/Mesh.hpp"
-#include"../InputParser.h"
+#include"../inputParser/InputParser.h"
 
 struct Fc
 // Valeur storée dans les faces
@@ -28,7 +28,6 @@ struct W
 class Solver
 {
 private:
-    Mesh* m_mesh; 
     ees2d::io::InputParser* m_inputParameters;
 
     // pointer to the chosen calculation scheme
@@ -38,6 +37,7 @@ public:
     Fc* m_face2Fc; 
     W* m_element2W;
     W* m_Winf; // initial values
+    Mesh* m_mesh; 
 
     Solver(Mesh* mesh, ees2d::io::InputParser* IC);
     ~Solver();
