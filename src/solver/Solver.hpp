@@ -3,6 +3,7 @@
 
 #include"../mesh/Mesh.hpp"
 #include"../inputParser/InputParser.h"
+#include"Residual.hpp"
 
 struct Fc
 // Valeur storée dans les faces
@@ -35,15 +36,6 @@ struct DeltaW
 	double E;
 };
 
-struct Residuals
-// Valeur storee dans les elements et ghost elements
-{
-	double rho;
-	double u;
-	double v;
-	double E;
-};
-
 class Solver
 {
 private:
@@ -57,7 +49,7 @@ public:
 	Fc *m_face2Fc;
 	W* m_element2W;
     W* m_Winf; // initial values
-	Residuals *m_element2Residuals;
+	Residual m_element2Residuals;
 	DeltaW *m_element2DeltaW;
 
 	Solver(Mesh* mesh, ees2d::io::InputParser* IC);
