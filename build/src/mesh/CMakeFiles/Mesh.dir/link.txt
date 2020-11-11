@@ -1,2 +1,0 @@
-/usr/bin/ar qc libMesh.a  CMakeFiles/Mesh.dir/Mesh.cpp.o CMakeFiles/Mesh.dir/Marker.cpp.o CMakeFiles/Mesh.dir/MarkerContainer.cpp.o
-/usr/bin/ranlib libMesh.a
