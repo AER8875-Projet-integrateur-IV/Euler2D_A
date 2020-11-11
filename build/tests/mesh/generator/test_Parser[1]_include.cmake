@@ -1,0 +1,5 @@
+if(EXISTS "/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_Parser[1]_tests.cmake")
+  include("/home/olivier/Documents/PI4/Euler2D_A/build/tests/mesh/generator/test_Parser[1]_tests.cmake")
+else()
+  add_test(test_Parser_NOT_BUILT test_Parser_NOT_BUILT)
+endif()

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libPostProcessing.a  CMakeFiles/PostProcessing.dir/TecplotWriter.cpp.o
+/usr/bin/ranlib libPostProcessing.a
