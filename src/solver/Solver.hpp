@@ -47,13 +47,13 @@ struct Residuals
 class Solver
 {
 private:
-	Mesh *m_mesh;
 	ees2d::io::InputParser* m_inputParameters;
 
     // pointer to the chosen calculation scheme
     void (Solver::*m_scheme)(int iFace);
 
 public:
+    Mesh *m_mesh;
 	Fc *m_face2Fc;
 	W* m_element2W;
     W* m_Winf; // initial values
