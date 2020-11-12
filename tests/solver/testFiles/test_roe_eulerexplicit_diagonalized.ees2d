@@ -61,7 +61,7 @@ SCHEME = ROE
 MIN_RESIDUAL = 1e-4
 
 # Number of maximum iterations to stop solver
-MAX_ITER = 200
+MAX_ITER = 1
 
 # Number of opemmp threads used by the solver
 OPEMMP_THREADS_NUM = 4
