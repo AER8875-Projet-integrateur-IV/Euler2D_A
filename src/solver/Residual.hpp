@@ -7,21 +7,22 @@ class Residual
 {
 private:
     int m_nElement;
-    int m_nIteration;
+    int m_iteration;
+    int m_maxIter;
 
     double* m_rho;
     double* m_u;
     double* m_v;
     double* m_E;
 
-    std::vector<double> m_rhoRMS;
-    std::vector<double> m_uRMS;
-    std::vector<double> m_vRMS;
-    std::vector<double> m_ERMS;
+    double* m_rhoRMS;
+    double* m_uRMS;
+    double* m_vRMS;
+    double* m_ERMS;
 
 public:
     Residual();
-    Residual(int nElement);
+    Residual(int nElement, int maxIter);
     ~Residual();
 
     double MaxRMS();

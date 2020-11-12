@@ -35,7 +35,8 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	m_face2Fc = new Fc[m_mesh->m_nFace];//Enlever? a voir
 
 	// initialise residuals
-	m_element2Residuals = Residual(m_mesh->m_nElement);
+	// m_element2Residuals.~Residual();
+	m_element2Residuals = new Residual(m_mesh->m_nElement, m_inputParameters->m_maxIter);
 
 	// initialise deltaW
 	m_element2DeltaW = new DeltaW[m_mesh->m_nFace];
@@ -73,7 +74,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 		m_mesh->m_markers->Update(m_mesh, this);
 
 		// On doit d'abord mettre les residus a 0 pour tous les elements!! au debut de chaque iteration
-		m_element2Residuals.Reset();
+		m_element2Residuals->Reset();
 
 		// Boucle sur les faces internes pour calculer les Flux
 		for (int iFace = 0; iFace < m_mesh->m_nFaceNoBoundaries; iFace++) {
@@ -94,7 +95,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 			Solver::DotProductBC(iFaceBC);
 
 			// Calcul du flux convectif de la face externe
-			(this->*m_scheme)(iFAceBC);
+			(this->*m_scheme)(iFaceBC);
 
 			// Mise a jour des Residus de l'element (singulier!) connecte a iFaceBC
 			Solver::CalculateResidualsBC(iFaceBC);
@@ -113,7 +114,8 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 		}
 
 		iteration++;
-		error = m_element2Residuals.MaxRMS();
+		m_element2Residuals->solveRMS();
+		error = m_element2Residuals->MaxRMS();
 	}
 	Logger::getInstance()->AddLog("Convergence after " + std::to_string(iteration) + " iterations.", 1);
 }
@@ -124,6 +126,7 @@ Solver::~Solver()
 	delete[] m_face2Fc;
 	delete m_Winf;
 	delete[] m_element2DeltaW;
+	delete m_element2Residuals;
 }
 
 
@@ -360,15 +363,15 @@ void Solver::CalculateResiduals(int iFace) {
 	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
 	double Area = m_mesh->m_face2Area[iFace];
 
-	*(m_element2Residuals.GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
-	*(m_element2Residuals.GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
-	*(m_element2Residuals.GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
-	*(m_element2Residuals.GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
+	*(m_element2Residuals->GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
+	*(m_element2Residuals->GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
+	*(m_element2Residuals->GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
+	*(m_element2Residuals->GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
 
-	*(m_element2Residuals.GetRho(elem2)) -= this->m_face2Fc[iFace].rho * Area;
-	*(m_element2Residuals.GetU(elem2)) -= this->m_face2Fc[iFace].u * Area;
-	*(m_element2Residuals.GetV(elem2)) -= this->m_face2Fc[iFace].v * Area;
-	*(m_element2Residuals.GetE(elem2)) -= this->m_face2Fc[iFace].H * Area;
+	*(m_element2Residuals->GetRho(elem2)) -= this->m_face2Fc[iFace].rho * Area;
+	*(m_element2Residuals->GetU(elem2)) -= this->m_face2Fc[iFace].u * Area;
+	*(m_element2Residuals->GetV(elem2)) -= this->m_face2Fc[iFace].v * Area;
+	*(m_element2Residuals->GetE(elem2)) -= this->m_face2Fc[iFace].H * Area;
 }
 
 //__________________________________________________________________________
@@ -376,18 +379,18 @@ void Solver::CalculateResidualsBC(int iFace) {
 	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
 	double Area = m_mesh->m_face2Area[iFace];
 
-	*(m_element2Residuals.GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
-	*(m_element2Residuals.GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
-	*(m_element2Residuals.GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
-	*(m_element2Residuals.GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
+	*(m_element2Residuals->GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
+	*(m_element2Residuals->GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
+	*(m_element2Residuals->GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
+	*(m_element2Residuals->GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
 }
 
 //__________________________________________________________________________
 void Solver::CalculateDeltaW(int iElem, double LocalTimeStep) {
-	this->m_element2DeltaW[iElem].rho = -LocalTimeStep * *(m_element2Residuals.GetRho(iElem)) / m_mesh->m_element2Volume[iElem];
-	this->m_element2DeltaW[iElem].u = -LocalTimeStep * *(m_element2Residuals.GetU(iElem)) / m_mesh->m_element2Volume[iElem];
-	this->m_element2DeltaW[iElem].v = -LocalTimeStep * *(m_element2Residuals.GetV(iElem)) / m_mesh->m_element2Volume[iElem];
-	this->m_element2DeltaW[iElem].E = -LocalTimeStep * *(m_element2Residuals.GetE(iElem)) / m_mesh->m_element2Volume[iElem];
+	this->m_element2DeltaW[iElem].rho = -LocalTimeStep * *(m_element2Residuals->GetRho(iElem)) / m_mesh->m_element2Volume[iElem];
+	this->m_element2DeltaW[iElem].u = -LocalTimeStep * *(m_element2Residuals->GetU(iElem)) / m_mesh->m_element2Volume[iElem];
+	this->m_element2DeltaW[iElem].v = -LocalTimeStep * *(m_element2Residuals->GetV(iElem)) / m_mesh->m_element2Volume[iElem];
+	this->m_element2DeltaW[iElem].E = -LocalTimeStep * *(m_element2Residuals->GetE(iElem)) / m_mesh->m_element2Volume[iElem];
 }
 
 //__________________________________________________________________________

@@ -49,7 +49,7 @@ public:
 	Fc *m_face2Fc;
 	W* m_element2W;
     W* m_Winf; // initial values
-	Residual m_element2Residuals;
+	Residual* m_element2Residuals;
 	DeltaW *m_element2DeltaW;
 
 	Solver(Mesh* mesh, ees2d::io::InputParser* IC);

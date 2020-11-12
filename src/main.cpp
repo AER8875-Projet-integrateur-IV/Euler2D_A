@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
 	std::vector<std::string> options{"volume","pressure"};
 	TecplotWriter writer(&mesh, &solver);
-	writer.DrawMesh("test.dat", options);
+	writer.DrawMesh(inputParameters.m_outputFile, options);
 
 	return 0;
 }
