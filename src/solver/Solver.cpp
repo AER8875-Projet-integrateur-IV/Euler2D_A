@@ -1,11 +1,11 @@
 #include "Solver.hpp"
-#include <cmath>
-#include <stdlib.h>//pour la valeur absolue
 #include "../utils/logger/Logger.hpp"
-#include <string>
-#include <iostream>
-#include<algorithm> 
 #include "Residual.hpp"
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <stdlib.h>//pour la valeur absolue
+#include <string>
 
 Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 {
@@ -36,7 +36,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 
 	// initialise residuals
 	m_element2Residuals = Residual(m_mesh->m_nElement);
-	
+
 	// initialise deltaW
 	m_element2DeltaW = new DeltaW[m_mesh->m_nFace];
 
@@ -68,25 +68,41 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	int iteration = 0;
 	while (error>m_inputParameters->m_minResiudal && iteration<m_inputParameters->m_maxIter)
 	{
-	
+
 		// Reset cond limit
 		m_mesh->m_markers->Update(m_mesh, this);
 
 		// On doit d'abord mettre les residus a 0 pour tous les elements!! au debut de chaque iteration
 		m_element2Residuals.Reset();
 
-		// Boucle sur les faces pour calculer les Flux
-		for (int iFace = 0; iFace < m_mesh->m_nFace; iFace++) {
+		// Boucle sur les faces internes pour calculer les Flux
+		for (int iFace = 0; iFace < m_mesh->m_nFaceNoBoundaries; iFace++) {
 			// Rearrangement du vecteur normal a la face si necessaire
 			Solver::DotProduct(iFace);
 
-			// Calcul du flux convectix de la face iFace
+			// Calcul du flux convectif de la face iFace
 			(this->*m_scheme)(iFace);
 
 			// Mise a jour des Residus des elements connectes a iFace
 			Solver::CalculateResiduals(iFace);
 		}
 
+
+		// Boucle sur les faces avec des conditions frontieres (BC Faces)
+		for (int iFaceBC = m_mesh->m_nFaceNoBoundaries; iFaceBC < m_mesh->m_nFace; iFaceBC++) {
+			// Rearrangement du vecteur normal a la face si necessaire
+			Solver::DotProductBC(iFaceBC);
+
+			// Calcul du flux convectif de la face externe
+			(this->*m_scheme)(iFAceBC);
+
+			// Mise a jour des Residus de l'element (singulier!) connecte a iFaceBC
+			Solver::CalculateResidualsBC(iFaceBC);
+		}
+
+
+		// Boucle sur les elements une fois que les residuals sont tous calcules pour update W
+		// La methode de Euler Explicite est utilisee
 		for (int iElem = 0; iElem < m_mesh->m_nElement; iElem++) {
 			// Calcul du pas de temps pour chaque element
 			double LocalTimeStep = Solver::LocalTimeStep(iElem);
@@ -111,7 +127,7 @@ Solver::~Solver()
 }
 
 
-
+//__________________________________________________________________________
 void Solver::SolveFc(){
 	// while (residuals>minresiduals && iteration<MaxIteration)
 
@@ -126,10 +142,11 @@ void Solver::SolveFc(){
 	// m_mesh->m_markers.update()
 }
 
+//__________________________________________________________________________
 void Solver::ConvectiveFluxAverageScheme(int iFace) {
 	// Schema avec les moyennes
-	int elem1 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 0];
-	int elem2 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 1];
+	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
+	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
 
 	double rho_avg = 0.5 * (this->m_element2W[elem1].rho + this->m_element2W[elem2].rho);
 	double u_avg = 0.5 * (this->m_element2W[elem1].u + this->m_element2W[elem2].u);
@@ -147,11 +164,12 @@ void Solver::ConvectiveFluxAverageScheme(int iFace) {
 	this->m_face2Fc[iFace].H = rho_avg * H_avg * V;
 }
 
+//__________________________________________________________________________
 void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	// Schema de Roe
 
-	int elem1 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 0];
-	int elem2 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 1];
+	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
+	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
 
 	// Pour faciliter la comprehension, calcul de sqrt(rho_L) et sqrt(rho_R)
 	double sqrtRhoL = pow(this->m_element2W[elem1].rho, 0.5);
@@ -255,9 +273,10 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	this->m_face2Fc[iFace].H = rhoHV_Fc;
 }
 
+//__________________________________________________________________________
 void Solver::DotProduct(int iFace) {
-	int elem1 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 0];
-	int elem2 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 1];
+	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
+	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
 
 	//Calcul du produit scalaire pour savoir s'il faut changer le sens de la normale a la face
 	double xElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 0];
@@ -278,6 +297,31 @@ void Solver::DotProduct(int iFace) {
 	}
 }
 
+//__________________________________________________________________________
+void Solver::DotProductBC(int iFace) {
+	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
+
+	//Calcul du produit scalaire pour savoir s'il faut changer le sens de la normale a la face
+	double xElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 0];
+	double yElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 1];
+
+	int node1 = m_mesh->m_face2Node[2 * iFace];
+	double xnode1 = m_mesh->m_coor[m_mesh->m_nDime * node1 + 0];
+	double ynode1 = m_mesh->m_coor[m_mesh->m_nDime * node1 + 1];
+
+	double xVecteur = xnode1 - xElem1;
+	double yVecteur = ynode1 - yElem1;
+
+	double dotProduct = xVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + yVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
+
+	if (dotProduct > 0) {//TODO a verifier pour cette condition
+		// Si on veut que la normale pointe vers l'element 1 (on va ensuite additionner le flux pour l'element 1 et soustraire le flux a l'element 2)
+		m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] *= -1;
+		m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] *= -1;
+	}
+}
+
+//__________________________________________________________________________
 double Solver::LocalTimeStep(int iElem) {
 	double CFL = 1;//CFL = m_inputParameters->CFL
 
@@ -310,22 +354,35 @@ double Solver::LocalTimeStep(int iElem) {
 	return LocalTimeStep;
 }
 
+//__________________________________________________________________________
 void Solver::CalculateResiduals(int iFace) {
-	int elem1 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 0];
-	int elem2 = m_mesh->m_face2Element[m_mesh->m_nDime * iFace + 1];
+	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
+	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
 	double Area = m_mesh->m_face2Area[iFace];
 
 	*(m_element2Residuals.GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
 	*(m_element2Residuals.GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
 	*(m_element2Residuals.GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
 	*(m_element2Residuals.GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
-	
+
 	*(m_element2Residuals.GetRho(elem2)) -= this->m_face2Fc[iFace].rho * Area;
 	*(m_element2Residuals.GetU(elem2)) -= this->m_face2Fc[iFace].u * Area;
 	*(m_element2Residuals.GetV(elem2)) -= this->m_face2Fc[iFace].v * Area;
 	*(m_element2Residuals.GetE(elem2)) -= this->m_face2Fc[iFace].H * Area;
 }
 
+//__________________________________________________________________________
+void Solver::CalculateResidualsBC(int iFace) {
+	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
+	double Area = m_mesh->m_face2Area[iFace];
+
+	*(m_element2Residuals.GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
+	*(m_element2Residuals.GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
+	*(m_element2Residuals.GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
+	*(m_element2Residuals.GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
+}
+
+//__________________________________________________________________________
 void Solver::CalculateDeltaW(int iElem, double LocalTimeStep) {
 	this->m_element2DeltaW[iElem].rho = -LocalTimeStep * *(m_element2Residuals.GetRho(iElem)) / m_mesh->m_element2Volume[iElem];
 	this->m_element2DeltaW[iElem].u = -LocalTimeStep * *(m_element2Residuals.GetU(iElem)) / m_mesh->m_element2Volume[iElem];
@@ -333,6 +390,7 @@ void Solver::CalculateDeltaW(int iElem, double LocalTimeStep) {
 	this->m_element2DeltaW[iElem].E = -LocalTimeStep * *(m_element2Residuals.GetE(iElem)) / m_mesh->m_element2Volume[iElem];
 }
 
+//__________________________________________________________________________
 void Solver::UpdateW(int iElem) {
 	this->m_element2W[iElem].rho += this->m_element2DeltaW[iElem].rho;
 	this->m_element2W[iElem].u += this->m_element2DeltaW[iElem].u / this->m_element2W[iElem].rho;

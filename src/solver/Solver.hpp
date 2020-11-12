@@ -67,10 +67,12 @@ public:
 	// Solver itself
 	// Dot Product
 	void DotProduct(int iFace);
+	void DotProductBC(int iFace);
 	// TimeStep
 	double LocalTimeStep(int iElem);
 	// Residuals
 	void CalculateResiduals(int iFace);
+	void CalculateResidualsBC(int iFace);
 	// Delta W
 	void CalculateDeltaW(int iElem, double LocalTimeStep);
 	// Update W

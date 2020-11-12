@@ -13,23 +13,24 @@ public:
 	int m_nElement;
 	int m_nElementTot; 		// m_nElement + number of ghost cells
 	int m_nFace;   			// Number of faces without double counting
-	int m_nFaceInt;			// Number of internal faces with double counting
+	int m_nFaceInt;         // Number of internal faces with double counting!
 	int m_nFaceNoBoundaries;// Number of internal faces without double counting
+	int m_nFaceBC;          // Number of faces with Boundary conditions
 
 	double* m_coor;
 	int* m_element2Node;
-	int* m_element2NodeStart;	
-	
+	int *m_element2NodeStart;
+
 	int* m_element2VTKId; 	// Stores type of element according to VTK format
 
 	int* m_node2Element;
-	int* m_node2ElementStart;	
-	
+	int *m_node2ElementStart;
+
 	int* m_element2Element;
-	int* m_element2ElementStart;	
+	int *m_element2ElementStart;
 
 	int* m_element2Face;
-	int* m_element2FaceStart;	
+	int *m_element2FaceStart;
 
 	int* m_face2Element;
 	int* m_face2Node;
@@ -42,7 +43,7 @@ public:
 	double* m_face2FaceVector;
 	double* m_face2Normal;
 	double* m_face2Area;
-	double* m_element2Center;	
+	double *m_element2Center;
 
 	// constructor and destructor
 	Mesh();
