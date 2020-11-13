@@ -24,9 +24,6 @@ void show_usage() {
 }
 
 int main(int argc, char *argv[]) {
-
-	std::cout << "Main is running" << std::endl;
-
 	std::string inpath;
 	for (int i = 1; i < argc; i++) {
 		std::string arg = argv[i];
