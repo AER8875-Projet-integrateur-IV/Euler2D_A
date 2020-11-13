@@ -1,7 +1,7 @@
 #pragma once
 #define RESIDUAL_H
 
-#include <vector>
+#include <string>
 
 class Residual
 {
@@ -28,6 +28,7 @@ public:
     double MaxRMS();
     void Reset();
     void solveRMS();
+    void Write2File(std::string path);
 
     inline double* GetRho(int iElement){
         return m_rho+iElement;

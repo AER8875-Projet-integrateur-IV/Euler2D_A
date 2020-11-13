@@ -2,6 +2,9 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <fstream>
+#include <string>
+#include "../utils/logger/Logger.hpp"
 
 Residual::Residual()
 {
@@ -64,13 +67,15 @@ void Residual::solveRMS(){
     m_uRMS[m_iteration] = (pow(R2/m_nElement,0.5));
     m_vRMS[m_iteration] = (pow(R3/m_nElement,0.5));
     m_ERMS[m_iteration] = (pow(R4/m_nElement,0.5));
+    m_iteration++;
 }
 
+
 double Residual::MaxRMS(){
-    return std::max({m_rhoRMS[m_iteration], 
-                     m_uRMS[m_iteration], 
-                     m_vRMS[m_iteration], 
-                     m_ERMS[m_iteration]});
+    return std::max({m_rhoRMS[m_iteration-1], 
+                     m_uRMS[m_iteration-1], 
+                     m_vRMS[m_iteration-1], 
+                     m_ERMS[m_iteration-1]});
 }
 
 void Residual::Reset(){
@@ -80,4 +85,21 @@ void Residual::Reset(){
         m_v[iElement] = 0;
         m_E[iElement] = 0;
     }
+}
+
+void Residual::Write2File(std::string path){
+    std::ofstream outfile(path);
+    outfile << "-------------------------- RESIDUAL ---------------------------\n"
+            << "Mesh file : NA\n"
+            << "Mach : NA\n"
+            << "AOA : 0\n"
+            << "rho              rhoU           rhoV           rhoH\n";
+    for(int iIteration = 0;iIteration<m_iteration;iIteration++){
+        outfile << std::to_string(m_rhoRMS[iIteration]) << " "
+                << std::to_string(m_uRMS[iIteration]) << " "
+                << std::to_string(m_vRMS[iIteration]) << " "
+                << std::to_string(m_ERMS[iIteration]) << "\n";
+    }
+    outfile.close();
+    Logger::getInstance()->AddLog("Residuals logged in "+ path,0);
 }
