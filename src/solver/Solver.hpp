@@ -8,10 +8,10 @@
 struct Fc
 // Valeur storée dans les faces
 {
-    double rho;
-    double u;
-    double v;
-	double H;
+    double rho; 		// rho*V
+    double u;			// rho*V*u
+    double v;			// rho*V*v
+	double H;			// rho*V*H
 };
 
 struct W

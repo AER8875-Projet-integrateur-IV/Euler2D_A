@@ -17,19 +17,29 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 
 	m_Winf = new W();
 
-	double E = IC->m_Pressure / IC->m_Density / IC->m_Gamma + 0.5 * pow(IC->m_Mach, 2);//POURQUOI MACH ICI?
-	m_Winf->E = E;
-	m_Winf->H = E + IC->m_Pressure / IC->m_Density;
-	m_Winf->P = IC->m_Pressure;
-	m_Winf->rho = IC->m_Density;
-	m_Winf->u = cos(IC->m_aoa*M_PI/180)*IC->m_Mach;
-	m_Winf->v = sin(IC->m_aoa*M_PI/180)*IC->m_Mach;
+	// double E = IC->m_Pressure / IC->m_Density / IC->m_Gamma + 0.5 * pow(IC->m_Mach, 2);//POURQUOI MACH ICI?
+	// m_Winf->E = E;
+	// m_Winf->H = E + IC->m_Pressure / IC->m_Density;
+	// m_Winf->P = IC->m_Pressure;
+	// m_Winf->rho = IC->m_Density;
+	// m_Winf->u = cos(IC->m_aoa*M_PI/180)*IC->m_Mach;
+	// m_Winf->v = sin(IC->m_aoa*M_PI/180)*IC->m_Mach;
+
+	// Adimensionnel
+	m_Winf->rho = 1;
+	m_Winf->P = 1;
+	m_Winf->u = IC->m_Mach*pow(IC->m_Gamma,0.5)*cos(IC->m_aoa*M_PI/180);
+	m_Winf->v = IC->m_Mach*pow(IC->m_Gamma,0.5)*sin(IC->m_aoa*M_PI/180);
+	double velocity = pow((pow(m_Winf->u,2)+pow(m_Winf->v,2)),0.5);
+	m_Winf->E = m_Winf->P / m_Winf->rho / IC->m_Gamma + 0.5 * pow(velocity, 2);
+	m_Winf->H = m_Winf->E + m_Winf->P / m_Winf->rho;
 
 	// initialise element2W
 	m_element2W = new W[m_mesh->m_nElementTot];
 	for(int iElement = 0;iElement<m_mesh->m_nElementTot;iElement++){
 		m_element2W[iElement] = *m_Winf;
 	}
+	// m_element2W[0].u = 5;
 
 	// initialise face2Fc
 	m_face2Fc = new Fc[m_mesh->m_nFace];//Enlever? a voir
@@ -107,7 +117,6 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 		for (int iElem = 0; iElem < m_mesh->m_nElement; iElem++) {
 			// Calcul du pas de temps pour chaque element
 			double LocalTimeStep = Solver::LocalTimeStep(iElem);
-
 			Solver::CalculateDeltaW(iElem, LocalTimeStep);
 
 			Solver::UpdateW(iElem);
@@ -118,6 +127,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 		error = m_element2Residuals->MaxRMS();
 	}
 	Logger::getInstance()->AddLog("Convergence after " + std::to_string(iteration) + " iterations.", 1);
+	m_element2Residuals->Write2File("residuals.dat");
 }
 
 Solver::~Solver()
@@ -208,10 +218,10 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	// 4. Calcul de Fc pour l'element de droite (FcR), elem2
 	double V_FcR = this->m_element2W[elem2].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem2].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
 
-	double rhoV_FcR = this->m_element2W[elem2].rho * V_FcL;
-	double rhouV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].u * V_FcL + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * this->m_element2W[elem2].P;
-	double rhovV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].v * V_FcL + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * this->m_element2W[elem2].P;
-	double rhoHV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].H * V_FcL;
+	double rhoV_FcR = this->m_element2W[elem2].rho * V_FcR;
+	double rhouV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].u * V_FcR + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * this->m_element2W[elem2].P;
+	double rhovV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].v * V_FcR + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * this->m_element2W[elem2].P;
+	double rhoHV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].H * V_FcR;
 
 
 	// 5. Calcul de la matrice de Roe
@@ -399,6 +409,6 @@ void Solver::UpdateW(int iElem) {
 	this->m_element2W[iElem].u += this->m_element2DeltaW[iElem].u / this->m_element2W[iElem].rho;
 	this->m_element2W[iElem].v += this->m_element2DeltaW[iElem].v / this->m_element2W[iElem].rho;
 	this->m_element2W[iElem].E += this->m_element2DeltaW[iElem].E / this->m_element2W[iElem].rho;
-	this->m_element2W[iElem].P += this->m_element2W[iElem].rho * m_inputParameters->m_Gamma * (this->m_element2W[iElem].E - 0.5 * (pow(this->m_element2W[iElem].u, 2) + pow(this->m_element2W[iElem].v, 2)));
-	this->m_element2W[iElem].H += this->m_element2W[iElem].E + this->m_element2W[iElem].P / this->m_element2W[iElem].rho;
+	this->m_element2W[iElem].P = this->m_element2W[iElem].rho * m_inputParameters->m_Gamma * (this->m_element2W[iElem].E - 0.5 * (pow(this->m_element2W[iElem].u, 2) + pow(this->m_element2W[iElem].v, 2)));
+	this->m_element2W[iElem].H = this->m_element2W[iElem].E + this->m_element2W[iElem].P / this->m_element2W[iElem].rho;
 }
