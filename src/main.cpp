@@ -12,6 +12,7 @@
 #include "postprocessing/TecplotWriter.hpp"
 #include "inputParser/InputParser.h"
 #include "solver/Solver.hpp"
+#include <chrono>
 
 void show_usage() {
 	std::cerr << "Usage: "
@@ -41,6 +42,8 @@ int main(int argc, char *argv[]) {
 			Logger::getInstance()->SetVerbosity(2);
 		}
 	}
+	time_t timeBeg;
+	time(&timeBeg);
 
 	ees2d::io::InputParser inputParameters{inpath};
 	inputParameters.parse();
@@ -63,6 +66,12 @@ int main(int argc, char *argv[]) {
 	std::vector<std::string> options{"volume","pressure","u","v","rho"};
 	TecplotWriter writer(&mesh, &solver);
 	writer.DrawMesh(inputParameters.m_outputFile, options);
+
+	time_t timeEnd;
+	time(&timeEnd);
+
+	int timeInterval = (intmax_t)timeEnd - (intmax_t)timeBeg;
+	Logger::getInstance()->AddLog("simulation time = " + std::to_string(timeInterval) + "seconds",1);
 
 	return 0;
 }
