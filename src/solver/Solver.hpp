@@ -39,12 +39,11 @@ struct DeltaW
 class Solver
 {
 private:
-	ees2d::io::InputParser* m_inputParameters;
-
-    // pointer to the chosen calculation scheme
+	// pointer to the chosen calculation scheme
     void (Solver::*m_scheme)(int iFace);
 
 public:
+	ees2d::io::InputParser* m_inputParameters;
     Mesh *m_mesh;
 	Fc *m_face2Fc;
 	W* m_element2W;
@@ -77,4 +76,6 @@ public:
 	void CalculateDeltaW(int iElem, double LocalTimeStep);
 	// Update W
 	void UpdateW(int iElem);
+
+	double solveE(double p, double gamma, double rho, double u, double v, double w);
 };

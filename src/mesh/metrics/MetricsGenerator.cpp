@@ -65,7 +65,7 @@ void MetricsGenerator::SolveVolume(){
 		} else{
 			throw std::invalid_argument(std::to_string(VTKId)+" is not a valid VTK element");
 		}
-		m_mesh->m_element2Volume[iElement] = volume;
+		m_mesh->m_element2Volume[iElement] = std::abs(volume);
 		//printf("%f ",m_mesh->m_element2Volume[iElement]);
 	}
 	Logger::getInstance()->AddLog("Volumes calculated",1);

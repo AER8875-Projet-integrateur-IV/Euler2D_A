@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdlib.h>//pour la valeur absolue
 #include <string>
+#include <stdexcept>
 
 Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 {
@@ -26,12 +27,13 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	// m_Winf->v = sin(IC->m_aoa*M_PI/180)*IC->m_Mach;
 
 	// Adimensionnel
+	double Vref = pow(m_inputParameters->m_gasConstant*m_inputParameters->m_Temp,0.5);
 	m_Winf->rho = 1;
 	m_Winf->P = 1;
-	m_Winf->u = IC->m_Mach*pow(IC->m_Gamma,0.5)*cos(IC->m_aoa*M_PI/180);
-	m_Winf->v = IC->m_Mach*pow(IC->m_Gamma,0.5)*sin(IC->m_aoa*M_PI/180);
+	m_Winf->u = IC->m_Mach*pow(IC->m_Gamma,0.5)*cos(IC->m_aoa*M_PI/180)/Vref;
+	m_Winf->v = IC->m_Mach*pow(IC->m_Gamma,0.5)*sin(IC->m_aoa*M_PI/180)/Vref;
 	double velocity = pow((pow(m_Winf->u,2)+pow(m_Winf->v,2)),0.5);
-	m_Winf->E = m_Winf->P / m_Winf->rho / IC->m_Gamma + 0.5 * pow(velocity, 2);
+	m_Winf->E = Solver::solveE(m_Winf->P, IC->m_Gamma, m_Winf->rho, m_Winf->u,m_Winf->v,0);
 	m_Winf->H = m_Winf->E + m_Winf->P / m_Winf->rho;
 
 	// initialise element2W
@@ -39,7 +41,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	for(int iElement = 0;iElement<m_mesh->m_nElementTot;iElement++){
 		m_element2W[iElement] = *m_Winf;
 	}
-	// m_element2W[0].u = 5;
+	//m_element2W[13].u = 1.4;
 
 	// initialise face2Fc
 	m_face2Fc = new Fc[m_mesh->m_nFace];//Enlever? a voir
@@ -167,13 +169,16 @@ void Solver::ConvectiveFluxAverageScheme(int iFace) {
 	double P_avg = 0.5 * (this->m_element2W[elem1].P + this->m_element2W[elem2].P);
 	double H_avg = 0.5 * (this->m_element2W[elem1].H + this->m_element2W[elem2].H);
 
+	double nx = m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0];
+	double ny = m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
+
 	// Calcul de la vitesse contravariante
-	double V = u_avg * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + v_avg * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];//TODO changer le 2 pour le cas 3D et mettre le nombre de noeuds de la face
+	double V = u_avg * nx + v_avg * ny;//TODO changer le 2 pour le cas 3D et mettre le nombre de noeuds de la face
 
 	// Calcul de Fc
 	this->m_face2Fc[iFace].rho = rho_avg * V;
-	this->m_face2Fc[iFace].u = rho_avg * u_avg * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * P_avg;
-	this->m_face2Fc[iFace].v = rho_avg * v_avg * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * P_avg;
+	this->m_face2Fc[iFace].u = rho_avg * u_avg * V + nx * P_avg;
+	this->m_face2Fc[iFace].v = rho_avg * v_avg * V + ny * P_avg;
 	this->m_face2Fc[iFace].H = rho_avg * H_avg * V;
 }
 
@@ -284,6 +289,9 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	this->m_face2Fc[iFace].u = rhouV_Fc;
 	this->m_face2Fc[iFace].v = rhovV_Fc;
 	this->m_face2Fc[iFace].H = rhoHV_Fc;
+	if(std::isnan(this->m_face2Fc[iFace].rho)){
+		int test =1;
+	}
 }
 
 //__________________________________________________________________________
@@ -298,7 +306,7 @@ void Solver::DotProduct(int iFace) {
 	double xElem2 = m_mesh->m_element2Center[m_mesh->m_nDime * elem2 + 0];
 	double yElem2 = m_mesh->m_element2Center[m_mesh->m_nDime * elem2 + 1];
 
-	double xVecteur = xElem2 - xElem1;
+	double xVecteur = xElem2 - xElem1;  // vecteur allant de elem1 vers elem2
 	double yVecteur = yElem2 - yElem1;
 
 	double dotProduct = xVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + yVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
@@ -313,7 +321,10 @@ void Solver::DotProduct(int iFace) {
 //__________________________________________________________________________
 void Solver::DotProductBC(int iFace) {
 	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
-
+	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
+	if(elem2 < elem1){
+		throw std::logic_error("elem2 has a lower index then elem1 at a border");
+	}
 	//Calcul du produit scalaire pour savoir s'il faut changer le sens de la normale a la face
 	double xElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 0];
 	double yElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 1];
@@ -336,7 +347,7 @@ void Solver::DotProductBC(int iFace) {
 
 //__________________________________________________________________________
 double Solver::LocalTimeStep(int iElem) {
-	double CFL = 1;//CFL = m_inputParameters->CFL
+	double CFL = 0.01;//CFL = m_inputParameters->CFL
 
 	// 1. Calcul des lambdas
 
@@ -373,6 +384,21 @@ void Solver::CalculateResiduals(int iFace) {
 	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
 	double Area = m_mesh->m_face2Area[iFace];
 
+	// verification that the vector is correctly alligned --------------------------------------------
+	double xElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 0];
+	double yElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 1];
+
+	double xElem2 = m_mesh->m_element2Center[m_mesh->m_nDime * elem2 + 0];
+	double yElem2 = m_mesh->m_element2Center[m_mesh->m_nDime * elem2 + 1];
+
+	double xVecteur = xElem2 - xElem1;		// vector going from elem1 to elem2
+	double yVecteur = yElem2 - yElem1;
+
+	double dotProduct = xVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + yVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]; // normal should go from elem2 to elem1
+	if(dotProduct > 0){						// vector should go from elem2 to elem1
+		throw std::logic_error("incorrect orientation");
+	}
+	// ------------------------------------------------------------------------------------------------
 	*(m_element2Residuals->GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
 	*(m_element2Residuals->GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
 	*(m_element2Residuals->GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
@@ -382,6 +408,12 @@ void Solver::CalculateResiduals(int iFace) {
 	*(m_element2Residuals->GetU(elem2)) -= this->m_face2Fc[iFace].u * Area;
 	*(m_element2Residuals->GetV(elem2)) -= this->m_face2Fc[iFace].v * Area;
 	*(m_element2Residuals->GetE(elem2)) -= this->m_face2Fc[iFace].H * Area;
+	if(std::isnan(*(m_element2Residuals->GetRho(elem1)))){
+		int test =1;
+	}
+	if(std::isnan(*(m_element2Residuals->GetRho(elem2)))){
+		int test =1;
+	}
 }
 
 //__________________________________________________________________________
@@ -393,6 +425,9 @@ void Solver::CalculateResidualsBC(int iFace) {
 	*(m_element2Residuals->GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
 	*(m_element2Residuals->GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
 	*(m_element2Residuals->GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
+	if(std::isnan(*(m_element2Residuals->GetRho(elem1)))){
+		int test =1;
+	}
 }
 
 //__________________________________________________________________________
@@ -401,14 +436,28 @@ void Solver::CalculateDeltaW(int iElem, double LocalTimeStep) {
 	this->m_element2DeltaW[iElem].u = -LocalTimeStep * *(m_element2Residuals->GetU(iElem)) / m_mesh->m_element2Volume[iElem];
 	this->m_element2DeltaW[iElem].v = -LocalTimeStep * *(m_element2Residuals->GetV(iElem)) / m_mesh->m_element2Volume[iElem];
 	this->m_element2DeltaW[iElem].E = -LocalTimeStep * *(m_element2Residuals->GetE(iElem)) / m_mesh->m_element2Volume[iElem];
+	if(std::isnan(m_element2DeltaW[iElem].rho)){
+		int test =1;
+	}
 }
 
 //__________________________________________________________________________
 void Solver::UpdateW(int iElem) {
+	double rho =this->m_element2W[iElem].rho;
 	this->m_element2W[iElem].rho += this->m_element2DeltaW[iElem].rho;
 	this->m_element2W[iElem].u += this->m_element2DeltaW[iElem].u / this->m_element2W[iElem].rho;
 	this->m_element2W[iElem].v += this->m_element2DeltaW[iElem].v / this->m_element2W[iElem].rho;
 	this->m_element2W[iElem].E += this->m_element2DeltaW[iElem].E / this->m_element2W[iElem].rho;
-	this->m_element2W[iElem].P = this->m_element2W[iElem].rho * m_inputParameters->m_Gamma * (this->m_element2W[iElem].E - 0.5 * (pow(this->m_element2W[iElem].u, 2) + pow(this->m_element2W[iElem].v, 2)));
+	this->m_element2W[iElem].P = this->m_element2W[iElem].rho * (m_inputParameters->m_Gamma-1) * (this->m_element2W[iElem].E - 0.5 * (pow(this->m_element2W[iElem].u, 2) + pow(this->m_element2W[iElem].v, 2)));
 	this->m_element2W[iElem].H = this->m_element2W[iElem].E + this->m_element2W[iElem].P / this->m_element2W[iElem].rho;
+	if(std::isnan(m_element2W[iElem].rho)){
+		int test =1;
+	}
+}
+
+
+double Solver::solveE(double p, double gamma, double rho, double u, double v, double w){
+	double E;
+	E = p/(gamma-1)/rho+0.5*(pow(u,2)+pow(v,2)+pow(w,2));
+	return E;
 }
