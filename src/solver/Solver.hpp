@@ -51,6 +51,8 @@ public:
 	Residual* m_element2Residuals;
 	DeltaW *m_element2DeltaW;
 
+	double m_Vref;
+
 	Solver(Mesh* mesh, ees2d::io::InputParser* IC);
     ~Solver();
 

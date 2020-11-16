@@ -27,11 +27,11 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	// m_Winf->v = sin(IC->m_aoa*M_PI/180)*IC->m_Mach;
 
 	// Adimensionnel
-	double Vref = pow(m_inputParameters->m_gasConstant*m_inputParameters->m_Temp,0.5);
+	m_Vref = pow(m_inputParameters->m_gasConstant*m_inputParameters->m_Temp,0.5);
 	m_Winf->rho = 1;
 	m_Winf->P = 1;
-	m_Winf->u = IC->m_Mach*pow(IC->m_Gamma,0.5)*cos(IC->m_aoa*M_PI/180)/Vref;
-	m_Winf->v = IC->m_Mach*pow(IC->m_Gamma,0.5)*sin(IC->m_aoa*M_PI/180)/Vref;
+	m_Winf->u = IC->m_Mach*pow(IC->m_Gamma,0.5)*cos(IC->m_aoa*M_PI/180);
+	m_Winf->v = IC->m_Mach*pow(IC->m_Gamma,0.5)*sin(IC->m_aoa*M_PI/180);
 	double velocity = pow((pow(m_Winf->u,2)+pow(m_Winf->v,2)),0.5);
 	m_Winf->E = Solver::solveE(m_Winf->P, IC->m_Gamma, m_Winf->rho, m_Winf->u,m_Winf->v,0);
 	m_Winf->H = m_Winf->E + m_Winf->P / m_Winf->rho;
@@ -41,7 +41,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	for(int iElement = 0;iElement<m_mesh->m_nElementTot;iElement++){
 		m_element2W[iElement] = *m_Winf;
 	}
-	//m_element2W[13].u = 1.4;
+	//m_element2W[13].P = 1.5;
 
 	// initialise face2Fc
 	m_face2Fc = new Fc[m_mesh->m_nFace];//Enlever? a voir
