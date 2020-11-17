@@ -63,6 +63,8 @@ public:
 		uint32_t m_threadsNum = 0;
 
 		// PostProcessing variables
+		std::string m_outputResidual;
+		std::string m_outputPressure;
 		std::string m_outputFormat;
 		std::string m_outputFile;
 		std::string m_generateLog;

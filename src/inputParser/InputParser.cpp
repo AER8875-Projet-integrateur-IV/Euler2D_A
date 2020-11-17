@@ -123,6 +123,12 @@ void InputParser::parse() {
         else if (line.find("MAX_ITER") != std::string::npos){
           ss1.seekg(10) >> m_maxIter;
         }
+        else if (line.find("RESIDUAL_FILE") != std::string::npos){
+          ss1.seekg(15) >> m_outputResidual;
+        }
+        else if (line.find("PRESSURE_FILE") != std::string::npos){
+          ss1.seekg(15) >> m_outputPressure;
+        }
         else if (line.find("OUTPUT_FORMAT") != std::string::npos){
           ss1.seekg(15) >> m_outputFormat;
         }
