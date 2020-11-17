@@ -164,6 +164,7 @@ void ees2d::io::InputParser::printAll() {
             << "m_gasConstant  "  <<m_gasConstant << "\n"
             << "m_SpecificHeat " <<m_SpecificHeat << "\n"
             << "m_scheme       "  <<m_scheme        << "\n"
+            << "m_cfl          "  <<m_cfl        << "\n"
             << "m_minResiudal  "  <<m_minResiudal   << "\n"
             << "m_maxIter      "  <<m_maxIter   << "\n"
             << "m_threadsNum   "  <<m_threadsNum    << "\n"

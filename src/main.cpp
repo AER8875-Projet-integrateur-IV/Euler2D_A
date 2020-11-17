@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 	Solver solver(&mesh, &inputParameters);
 	solver.SolveFc();
 
-	std::vector<std::string> options{"volume","pressure","u","v","rho"};
+	std::vector<std::string> options{"volume","pressure","u","v","rho","rhoRMS"};
 	TecplotWriter writer(&mesh, &solver);
 	writer.DrawMesh(inputParameters.m_outputFile, options);
 

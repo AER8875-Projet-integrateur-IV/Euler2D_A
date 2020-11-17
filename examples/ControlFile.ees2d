@@ -27,7 +27,7 @@ SPEED_OPTION = MACH
 # Velocity in m/s
 VELOCITY = 0
 
-MACH = 1.5
+MACH = 0.8
 
 angle of attack in degrees
 AOA = 0.0
@@ -56,7 +56,7 @@ SPECIFIC_HEAT = 1004.7
 ------------------- SOLVER CONTROL ------------------------
 
 # Discretization of the Convective Fluxes . Options : ROE | AVERAGE | AUSM (not implement yet)
-SCHEME = AVERAGE
+SCHEME = ROE
 
 # Time integration . Options : EXPLICIT_EULER / RK5
 TIME_INTEGRATION = EXPLICIT_EULER
@@ -65,10 +65,10 @@ TIME_INTEGRATION = EXPLICIT_EULER
 CFL = 0.5
 
 # Minimum residual to stop solver
-MIN_RESIDUAL = 1e-4
+MIN_RESIDUAL = 1e-8
 
 # Number of maximum iterations to stop solver
-MAX_ITER = 807
+MAX_ITER = 40000
 
 # Number of opemmp threads used by the solver
 OPEMMP_THREADS_NUM = 4

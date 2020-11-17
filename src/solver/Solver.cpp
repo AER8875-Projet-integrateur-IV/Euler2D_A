@@ -83,7 +83,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	{
 
 		// Reset cond limit
-		// m_mesh->m_markers->Update(m_mesh, this);
+		m_mesh->m_markers->Update(m_mesh, this);
 
 		// On doit d'abord mettre les residus a 0 pour tous les elements!! au debut de chaque iteration
 		m_element2Residuals->Reset();
@@ -107,8 +107,8 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 			Solver::DotProductBC(iFaceBC);
 
 			// Calcul du flux convectif de la face externe
-			// (this->*m_scheme)(iFaceBC);
-			Solver::BCFlux(iFaceBC);//TODO doit modifier le if!
+			(this->*m_scheme)(iFaceBC);
+			//Solver::BCFlux(iFaceBC);//TODO doit modifier le if!
 
 
 			// Mise a jour des Residus de l'element (singulier!) connecte a iFaceBC
@@ -131,7 +131,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 		error = m_element2Residuals->MaxRMS();
 	}
 	Logger::getInstance()->AddLog("Convergence after " + std::to_string(iteration) + " iterations.", 1);
-	m_element2Residuals->Write2File("residuals.dat");
+	m_element2Residuals->Write2File(m_inputParameters->m_outputResidual);
 }
 
 Solver::~Solver()
@@ -206,30 +206,44 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	double V_tilde = u_tilde * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + v_tilde * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
 
 	// 2. Calcul des Delta
-	double rhoDelta = this->m_element2W[elem2].rho - this->m_element2W[elem1].rho;
-	double uDelta = this->m_element2W[elem2].u - this->m_element2W[elem1].u;
-	double vDelta = this->m_element2W[elem2].v - this->m_element2W[elem1].v;
-	double pDelta = this->m_element2W[elem2].P - this->m_element2W[elem1].P;
-	double VDelta = (this->m_element2W[elem2].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem2].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]) -
-	                (this->m_element2W[elem1].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem1].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]);
+	double rhoDelta = (this->m_element2W[elem2].rho - this->m_element2W[elem1].rho);
+	double uDelta = (this->m_element2W[elem2].u - this->m_element2W[elem1].u);
+	double vDelta = (this->m_element2W[elem2].v - this->m_element2W[elem1].v);
+	double pDelta = (this->m_element2W[elem2].P - this->m_element2W[elem1].P);
+	double VDelta = ((this->m_element2W[elem2].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem2].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]) -
+	                (this->m_element2W[elem1].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem1].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]));
 
 	// 3. Calcul de Fc pour l'element de gauche (FcL), elem1
-	double V_FcL = this->m_element2W[elem1].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem1].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
+	// double V_FcL = this->m_element2W[elem1].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem1].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
 
-	double rhoV_FcL = this->m_element2W[elem1].rho * V_FcL;
-	double rhouV_FcL = this->m_element2W[elem1].rho * this->m_element2W[elem1].u * V_FcL + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * this->m_element2W[elem1].P;
-	double rhovV_FcL = this->m_element2W[elem1].rho * this->m_element2W[elem1].v * V_FcL + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * this->m_element2W[elem1].P;
-	double rhoHV_FcL = this->m_element2W[elem1].rho * this->m_element2W[elem1].H * V_FcL;
+	// double rhoV_FcL = this->m_element2W[elem1].rho * V_FcL;
+	// double rhouV_FcL = this->m_element2W[elem1].rho * this->m_element2W[elem1].u * V_FcL + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * this->m_element2W[elem1].P;
+	// double rhovV_FcL = this->m_element2W[elem1].rho * this->m_element2W[elem1].v * V_FcL + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * this->m_element2W[elem1].P;
+	// double rhoHV_FcL = this->m_element2W[elem1].rho * this->m_element2W[elem1].H * V_FcL;
 
 
-	// 4. Calcul de Fc pour l'element de droite (FcR), elem2
-	double V_FcR = this->m_element2W[elem2].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem2].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
+	// // 4. Calcul de Fc pour l'element de droite (FcR), elem2
+	// double V_FcR = this->m_element2W[elem2].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem2].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
 
-	double rhoV_FcR = this->m_element2W[elem2].rho * V_FcR;
-	double rhouV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].u * V_FcR + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * this->m_element2W[elem2].P;
-	double rhovV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].v * V_FcR + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * this->m_element2W[elem2].P;
-	double rhoHV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].H * V_FcR;
+	// double rhoV_FcR = this->m_element2W[elem2].rho * V_FcR;
+	// double rhouV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].u * V_FcR + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * this->m_element2W[elem2].P;
+	// double rhovV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].v * V_FcR + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * this->m_element2W[elem2].P;
+	// double rhoHV_FcR = this->m_element2W[elem2].rho * this->m_element2W[elem2].H * V_FcR;
 
+	double u_centre, v_centre, rho_centre, H_centre, P_centre;
+
+	u_centre = 0.5*(this->m_element2W[elem1].u+this->m_element2W[elem2].u);
+	v_centre = 0.5*(this->m_element2W[elem1].v+this->m_element2W[elem2].v);
+	rho_centre = 0.5*(this->m_element2W[elem1].rho+this->m_element2W[elem2].rho);
+	H_centre = 0.5*(this->m_element2W[elem1].H+this->m_element2W[elem2].H);
+	P_centre = 0.5*(this->m_element2W[elem1].P+this->m_element2W[elem2].P);
+
+	double V_centre = u_centre * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + v_centre * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
+
+	double rhoV_centre = rho_centre * V_centre;
+	double rhouV_centre = rho_centre * u_centre * V_centre + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * P_centre;
+	double rhovV_centre = rho_centre * v_centre * V_centre + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * P_centre;
+	double rhoHV_centre = rho_centre * H_centre * V_centre;
 
 	// 5. Calcul de la matrice de Roe
 	// 5.01 Calul du facteur de correction de Hartens, delta
@@ -241,7 +255,7 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	// double delta = 0.1 * a_avg;  //Premier cas possible
 	//double delta = 0.1 * c_tilde;// Deuxieme cas possible, a voir lequel prendre
 
-	double delta = (1 / 15) * a_elem1;
+	double delta = (1.0 / 15.0) * a_elem1;
 
 	// Pour DeltaFc1
 	double HartensCorrectionF1;
@@ -283,12 +297,21 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	double rhovV_Fc5 = termFc5 * (v_tilde + c_tilde * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]);
 	double rhoHV_Fc5 = termFc5 * (H_tilde + c_tilde * V_tilde);
 
+	
 	// 6. Calcul de Fc
-	double rhoV_Fc = 0.5 * (rhoV_FcL + rhoV_FcR - rhoV_Fc1 - rhoV_Fc234 - rhoV_Fc5);
-	double rhouV_Fc = 0.5 * (rhouV_FcL + rhouV_FcR - rhouV_Fc1 - rhouV_Fc234 - rhouV_Fc5);
-	double rhovV_Fc = 0.5 * (rhovV_FcL + rhovV_FcR - rhovV_Fc1 - rhovV_Fc234 - rhovV_Fc5);
-	double rhoHV_Fc = 0.5 * (rhoHV_FcL + rhoHV_FcR - rhoHV_Fc1 - rhoHV_Fc234 - rhoHV_Fc5);
-
+	double rhoV_Fc, rhouV_Fc, rhovV_Fc, rhoHV_Fc;
+	if(iFace<m_mesh->m_nFaceInt){
+		rhoV_Fc = rhoV_centre + 0.5 * ( -rhoV_Fc1 - rhoV_Fc234 - rhoV_Fc5);
+		rhouV_Fc = rhouV_centre + 0.5 * (- rhouV_Fc1 - rhouV_Fc234 - rhouV_Fc5);
+		rhovV_Fc = rhovV_centre + 0.5 * (- rhovV_Fc1 - rhovV_Fc234 - rhovV_Fc5);
+		rhoHV_Fc = rhoHV_centre + 0.5 * (- rhoHV_Fc1 - rhoHV_Fc234 - rhoHV_Fc5);
+	} else{
+		rhoV_Fc = rhoV_centre;
+		rhouV_Fc =  rhouV_centre;
+		rhovV_Fc =  rhovV_centre;
+		rhoHV_Fc =  rhoHV_centre;
+	}
+	
 	// 7. Met dans le pointeur
 	this->m_face2Fc[iFace].rho = rhoV_Fc;
 	this->m_face2Fc[iFace].u = rhouV_Fc;
@@ -299,6 +322,7 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	}
 }
 
+/*
 //__________________________________________________________________________
 void Solver::BCFlux(int iFace) {
 	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
@@ -392,7 +416,7 @@ void Solver::BCFlux(int iFace) {
 		}
 	}
 }
-
+*/
 //__________________________________________________________________________
 void Solver::DotProduct(int iFace) {
 	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
@@ -410,7 +434,7 @@ void Solver::DotProduct(int iFace) {
 
 	double dotProduct = xVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + yVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
 
-	if (dotProduct > 0) {//TODO a verifier pour cette condition
+	if (dotProduct < 0) {//TODO a verifier pour cette condition
 		// Si on veut que la normale pointe vers l'element 1 (on va ensuite additionner le flux pour l'element 1 et soustraire le flux a l'element 2)
 		m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] *= -1;
 		m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] *= -1;
@@ -421,9 +445,6 @@ void Solver::DotProduct(int iFace) {
 void Solver::DotProductBC(int iFace) {
 	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
 	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
-	if(elem2 < elem1){
-		throw std::logic_error("elem2 has a lower index then elem1 at a border");
-	}
 	//Calcul du produit scalaire pour savoir s'il faut changer le sens de la normale a la face
 	double xElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 0];
 	double yElem1 = m_mesh->m_element2Center[m_mesh->m_nDime * elem1 + 1];
@@ -437,7 +458,7 @@ void Solver::DotProductBC(int iFace) {
 
 	double dotProduct = xVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + yVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
 
-	if (dotProduct > 0) {//TODO a verifier pour cette condition
+	if (dotProduct < 0) {//TODO a verifier pour cette condition
 		// Si on veut que la normale pointe vers l'element 1 (on va ensuite additionner le flux pour l'element 1 et soustraire le flux a l'element 2)
 		m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] *= -1;
 		m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] *= -1;
@@ -446,8 +467,7 @@ void Solver::DotProductBC(int iFace) {
 
 //__________________________________________________________________________
 double Solver::LocalTimeStep(int iElem) {
-	double CFL = 0.01;//CFL = m_inputParameters->CFL
-
+	double CFL = m_inputParameters->m_cfl;
 	// 1. Calcul des lambdas
 
 	// 1.1 Calcul des Sum_Sx et Sum_Sy
@@ -494,9 +514,9 @@ void Solver::CalculateResiduals(int iFace) {
 	double yVecteur = yElem2 - yElem1;
 
 	double dotProduct = xVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + yVecteur * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]; // normal should go from elem2 to elem1
-	if(dotProduct > 0){						// vector should go from elem2 to elem1
-		throw std::logic_error("incorrect orientation");
-	}
+	// if(dotProduct > 0){						// vector should go from elem2 to elem1
+	// 	throw std::logic_error("incorrect orientation");
+	// }
 	// ------------------------------------------------------------------------------------------------
 	*(m_element2Residuals->GetRho(elem1)) += this->m_face2Fc[iFace].rho * Area;
 	*(m_element2Residuals->GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
@@ -507,12 +527,6 @@ void Solver::CalculateResiduals(int iFace) {
 	*(m_element2Residuals->GetU(elem2)) -= this->m_face2Fc[iFace].u * Area;
 	*(m_element2Residuals->GetV(elem2)) -= this->m_face2Fc[iFace].v * Area;
 	*(m_element2Residuals->GetE(elem2)) -= this->m_face2Fc[iFace].H * Area;
-	if(std::isnan(*(m_element2Residuals->GetRho(elem1)))){
-		int test =1;
-	}
-	if(std::isnan(*(m_element2Residuals->GetRho(elem2)))){
-		int test =1;
-	}
 }
 
 //__________________________________________________________________________

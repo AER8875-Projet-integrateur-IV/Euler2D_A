@@ -153,6 +153,12 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	int iFace = m_containingFaces[index];
 	int nDime = mesh->m_nDime;
 
+	// // verification that the vector is correctly alligned --------------------------------------------
+	// if(iGhostElement < iElement){						// vector should go from elem2 to elem1
+	// 	throw std::logic_error("marker error");
+	// }
+	// // ------------------------------------------------------------------------------------------------
+
 	double nx, ny;
 	// Define face vector
 	nx = mesh->m_face2Normal[mesh->m_nDime*iFace+0];
@@ -160,9 +166,21 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 
 	// Make sur the face vector points outwards
 	double xb, yb; // vector going from the boundary element center and one of the boundary nodes
-	int nodeb = mesh->m_face2Node[2*iFace]; 
-	xb = mesh->m_coor[nodeb*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
-	yb = mesh->m_coor[nodeb*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+
+	// first point
+	double xb1, yb1;
+	int nodeb1 = mesh->m_face2Node[2*iFace]; 
+	xb1 = mesh->m_coor[nodeb1*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	yb1 = mesh->m_coor[nodeb1*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+	
+	// second point
+	double xb2, yb2;
+	int nodeb2 = mesh->m_face2Node[2*iFace+1]; 
+	xb2 = mesh->m_coor[nodeb2*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	yb2 = mesh->m_coor[nodeb2*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+
+	xb = (xb1+xb2)/2;
+	yb = (yb1+yb2)/2;
 
 	double faceNormalOrientation = xb*nx+yb*ny;
 
@@ -171,17 +189,15 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	uElement = solver->m_element2W[iElement].u;
 	vElement = solver->m_element2W[iElement].v;
 
-	double velocityOrientation = uElement*nx+vElement*ny;
-
 	double orientation = xb*uElement+yb*vElement;
 	
 	// flow velocity
 	double gamma = solver->m_inputParameters->m_Gamma;
-	double umach = uElement/pow(gamma,0.5);
-	double vmach = vElement/pow(gamma,0.5);
+	double umach = uElement/pow(gamma,0.5)*solver->m_Vref;
+	double vmach = vElement/pow(gamma,0.5)*solver->m_Vref;
 	double mach = pow((pow(umach,2)+pow(vmach,2)),0.5);
 	
-	if(orientation>0){ 		// outflow
+	if(orientation<0){ 		// outflow
 		if(mach>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
 		} else{				// subsonic
@@ -244,18 +260,57 @@ void Marker::Update_wall(Mesh* mesh, Solver* solver, int index){
 	// Define face normal vector
 	nx = mesh->m_face2Normal[mesh->m_nDime*iFace+0];
 	ny = mesh->m_face2Normal[mesh->m_nDime*iFace+1];
+
+	// verification that the vector is correctly alligned --------------------------------------------
+	// // Make sur the face vector points outwards
+	// double xb, yb; // vector going from the boundary element center and one of the boundary nodes
+	// int nDime = mesh->m_nDime;
+	// // first point
+	// double xb1, yb1;
+	// int nodeb1 = mesh->m_face2Node[2*iFace]; 
+	// xb1 = mesh->m_coor[nodeb1*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	// yb1 = mesh->m_coor[nodeb1*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+	
+	// // second point
+	// double xb2, yb2;
+	// int nodeb2 = mesh->m_face2Node[2*iFace+1]; 
+	// xb2 = mesh->m_coor[nodeb2*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	// yb2 = mesh->m_coor[nodeb2*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+
+	// xb = (xb1+xb2)/2;
+	// yb = (yb1+yb2)/2;
+
+	// double orientation = xb*nx+yb*ny;
+
+	// if(orientation > 0){						// normal should point towards ghost cell
+	// 	std::cout<<"out"<<std::endl;
+	// 	// throw std::logic_error("marker error");
+	// }	else{
+	// 	std::cout<<"in"<<std::endl;
+	// }
+	// ------------------------------------------------------------------------------------------------	
 	
 	// Define velocity in border element
 	uElement = solver->m_element2W[iElement].u;
 	vElement = solver->m_element2W[iElement].v;
 
 	// Define velocity in ghost element
-	V2 = uElement*nx+vElement*ny;
+	V2 = (uElement*nx+vElement*ny);
 	uGhost = uElement-2*V2*nx;
 	vGhost = vElement-2*V2*ny;
-
+	// if(V2 < 1-3){						// normal should point towards ghost cell
+	// 	std::cout<<"V=0"<<std::endl;
+	// 	// throw std::logic_error("marker error");
+	// }	
 	// Update ghost element
 	solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
 	solver->m_element2W[iGhostElement].u = uGhost;
 	solver->m_element2W[iGhostElement].v = vGhost;
+	
+	// std::cout << uGhost << " : " << uElement << "\n"
+	// 		  << vGhost << " : " << vElement << "\n"
+	// 		  << nx << " : " << ny << "\n"
+	// 		  << "-----------------------"<< std::endl;
+			  
+
 }

@@ -284,12 +284,12 @@ void MeshGenerator::SolveFaceConnectivity(){
 		}
 	}
 
-	Logger::getInstance()->AddLog("element to face:",2);
-	std::string message;
-	for (int iElement = 0;iElement<m_mesh->m_element2ElementStart[m_mesh->m_nElement];iElement++){
-		Logger::getInstance()->AddLog(std::to_string(m_mesh->m_element2Face[iElement])+", ",2,false);
-	}
-	printf("\n");
+	// Logger::getInstance()->AddLog("element to face:",2);
+	// std::string message;
+	// for (int iElement = 0;iElement<m_mesh->m_element2ElementStart[m_mesh->m_nElement];iElement++){
+	// 	Logger::getInstance()->AddLog(std::to_string(m_mesh->m_element2Face[iElement])+", ",2,false);
+	// }
+	// printf("\n");
 
 	//nBondFaces = m_mesh->m_nFace - m_mesh->m_nFaceInt;
 
