@@ -18,15 +18,15 @@ void show_usage() {
 	std::cerr << "Usage: "
 	          << "Options:\n"
 	          << "\t-h,--help\t\tShow this help message\n"
-	          << "\t-i,--input\tSpecify the file path for the EES2D Software Input file\n"
+	        //   << "\t-i,--input\tSpecify the file path for the EES2D Software Input file\n"
 			  << "\t-v,--verbose\tOutput debugging information\n"
 			  << "\t-vv,--veryverbose\tOutput EVERYTHING !?!?!?!?\n"
 	          << std::endl;
 }
 
 int main(int argc, char *argv[]) {
-	std::string inpath;
-	for (int i = 1; i < argc; i++) {
+	std::string inpath=argv[1];
+	for (int i = 2; i < argc; i++) {
 		std::string arg = argv[i];
 		if ((arg == "-h") || (arg == "--help")) {
 			show_usage();
@@ -34,9 +34,9 @@ int main(int argc, char *argv[]) {
 		} else if ((arg == "-i") || (arg == "--input")) {
 			inpath = argv[++i];
 			Logger::getInstance()->AddLog("input mesh path = " + inpath,0);
-		} else if ((arg == "-v") || (arg == "--verbose")) {
-			argv[++i];
-			Logger::getInstance()->SetVerbosity(1);
+		// } else if ((arg == "-v") || (arg == "--verbose")) {
+		// 	argv[++i];
+		// 	Logger::getInstance()->SetVerbosity(1);
 		} else if ((arg == "-vv") || (arg == "--veryverbose")) {
 			argv[++i];
 			Logger::getInstance()->SetVerbosity(2);
