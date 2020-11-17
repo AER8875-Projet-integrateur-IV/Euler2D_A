@@ -13,7 +13,7 @@ START
 MESH_FORMAT = SU2
 
 #Path to mesh file (from executable directory)
-MESH_FILE = ../examples/SU2/square_5x5.su2
+MESH_FILE = ../examples/SU2/naca0012_euler_33x33x1_O_1B.su2
 
 #Type of mesh. Options : STRUCTURED | UNSTRUCTURED
 MESH_TYPE = UNSTRUCTURED
@@ -27,7 +27,7 @@ SPEED_OPTION = MACH
 # Velocity in m/s
 VELOCITY = 0
 
-MACH = 2.6
+MACH = 0.8
 
 angle of attack in degrees
 AOA = 0.0
@@ -55,19 +55,31 @@ SPECIFIC_HEAT = 1004.7
 
 ------------------- SOLVER CONTROL ------------------------
 
-# Discretization of the Convective Fluxes . Options : ROE | AUSM (not implement yet)
+# Discretization of the Convective Fluxes . Options : ROE | AVERAGE | AUSM (not implement yet)
 SCHEME = ROE
 
+# Time integration . Options : EXPLICIT_EULER / RK5
+TIME_INTEGRATION = EXPLICIT_EULER
+
+# Courant_Friedrichs-Lewy Number (CFL)
+CFL = 0.5
+
 # Minimum residual to stop solver
-MIN_RESIDUAL = 1e-4
+MIN_RESIDUAL = 1e-8
 
 # Number of maximum iterations to stop solver
-MAX_ITER = 200
+MAX_ITER = 40000
 
 # Number of opemmp threads used by the solver
 OPEMMP_THREADS_NUM = 4
 
 -------------------- POST-PROCESSING CONTROL ----------------
+#Path to residual output file, from executable directory (without file extension)
+RESIDUAL_FILE = residual.dat
+
+#Path to pressure output file, from executable directory (without file extension)
+PRESSURE_FILE = pressure.dat
+
 # Post processng file format . Options : TECPLOT | VTK
 OUTPUT_FORMAT = TECPLOT
 

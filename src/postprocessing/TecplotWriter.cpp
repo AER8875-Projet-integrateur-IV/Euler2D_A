@@ -88,9 +88,25 @@ void TecplotWriter::WriteVar(std::vector<std::string> options){
             for(int iElement = 0; iElement<m_mesh->m_nElement; iElement++){
                 m_outfile << std::to_string(m_solver->m_element2W[iElement].P) << "\n";
             }
-        }else{
+        } else if(var=="u"){
+            for(int iElement = 0; iElement<m_mesh->m_nElement; iElement++){
+                m_outfile << std::to_string(m_solver->m_element2W[iElement].u) << "\n";
+            }
+        } else if(var=="v"){
+            for(int iElement = 0; iElement<m_mesh->m_nElement; iElement++){
+                m_outfile << std::to_string(m_solver->m_element2W[iElement].v) << "\n";
+            }
+        } else if(var=="rho"){
+            for(int iElement = 0; iElement<m_mesh->m_nElement; iElement++){
+                m_outfile << std::to_string(m_solver->m_element2W[iElement].rho) << "\n";
+            }
+        } else if(var=="rhoRMS"){
+            for(int iElement = 0; iElement<m_mesh->m_nElement; iElement++){
+                m_outfile << std::to_string(*(m_solver->m_element2Residuals->GetRho(iElement))) << "\n";       
+            }                 
+        } else{
             throw;
-        }       
+        }   
     }
 }
 

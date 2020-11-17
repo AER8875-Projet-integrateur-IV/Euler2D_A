@@ -50,7 +50,8 @@ void Marker::DefineUpdateFunction(std::string borderType){
 		m_updateFunction = &Marker::Update_wall;
 	} else
 	{
-		// not implemented
+		// Border conditions are considered farfield by default
+		m_updateFunction = &Marker::Update_farfield;
 	}
 }
 
@@ -152,6 +153,12 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	int iFace = m_containingFaces[index];
 	int nDime = mesh->m_nDime;
 
+	// // verification that the vector is correctly alligned --------------------------------------------
+	// if(iGhostElement < iElement){						// vector should go from elem2 to elem1
+	// 	throw std::logic_error("marker error");
+	// }
+	// // ------------------------------------------------------------------------------------------------
+
 	double nx, ny;
 	// Define face vector
 	nx = mesh->m_face2Normal[mesh->m_nDime*iFace+0];
@@ -159,9 +166,21 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 
 	// Make sur the face vector points outwards
 	double xb, yb; // vector going from the boundary element center and one of the boundary nodes
-	int nodeb = mesh->m_face2Node[2*iFace]; 
-	xb = mesh->m_coor[nodeb*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
-	yb = mesh->m_coor[nodeb*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+
+	// first point
+	double xb1, yb1;
+	int nodeb1 = mesh->m_face2Node[2*iFace]; 
+	xb1 = mesh->m_coor[nodeb1*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	yb1 = mesh->m_coor[nodeb1*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+	
+	// second point
+	double xb2, yb2;
+	int nodeb2 = mesh->m_face2Node[2*iFace+1]; 
+	xb2 = mesh->m_coor[nodeb2*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	yb2 = mesh->m_coor[nodeb2*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+
+	xb = (xb1+xb2)/2;
+	yb = (yb1+yb2)/2;
 
 	double faceNormalOrientation = xb*nx+yb*ny;
 
@@ -170,24 +189,64 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	uElement = solver->m_element2W[iElement].u;
 	vElement = solver->m_element2W[iElement].v;
 
-	double velocityOrientation = uElement*nx+vElement*ny;
-
-	double orientation = faceNormalOrientation*velocityOrientation;
+	double orientation = xb*uElement+yb*vElement;
 	
 	// flow velocity
-	double velocity = pow((pow(uElement,2)+pow(vElement,2)),0.5);
+	double gamma = solver->m_inputParameters->m_Gamma;
+	double umach = uElement/pow(gamma,0.5)*solver->m_Vref;
+	double vmach = vElement/pow(gamma,0.5)*solver->m_Vref;
+	double mach = pow((pow(umach,2)+pow(vmach,2)),0.5);
 	
 	if(orientation<0){ 		// outflow
-		if(velocity>1){ 	// supersonic
+		if(mach>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
 		} else{				// subsonic
-			throw std::logic_error("subsonic condition not implemented");
+			double pElem = solver->m_element2W[iElement].P;
+			double rhoElem = solver->m_element2W[iElement].rho;
+
+			double pInf = solver->m_Winf->P;
+			double uInf = solver->m_Winf->u;
+			double vInf = solver->m_Winf->v;
+			double rhoInf = solver->m_Winf->rho;
+
+			double c0 = pow(gamma*pElem/rhoElem,0.5);
+			double rho0 = rhoElem;
+
+			solver->m_element2W[iGhostElement].P = pInf;
+			solver->m_element2W[iGhostElement].rho = rhoElem+(solver->m_element2W[iGhostElement].P-pElem)/pow(c0,2);
+			solver->m_element2W[iGhostElement].u = uElement+nx*(pElem-solver->m_element2W[iGhostElement].P)/(rho0*c0);
+			solver->m_element2W[iGhostElement].v = vElement+ny*(pElem-solver->m_element2W[iGhostElement].P)/(rho0*c0);
+			solver->m_element2W[iGhostElement].E = pInf/(solver->m_element2W[iGhostElement].rho*(gamma-1))+0.5*(pow(solver->m_element2W[iGhostElement].u,2)+pow(solver->m_element2W[iGhostElement].v,2));
+			solver->m_element2W[iGhostElement].H = solver->m_element2W[iGhostElement].E +solver->m_element2W[iGhostElement].P/solver->m_element2W[iGhostElement].rho;
+
+			Logger::getInstance()->AddLog(" subsonic outflow ",1);
+			// throw std::logic_error("subsonic condition not implemented");
 		}
 	} else{					// inflow
-		if(velocity>1){ 	// supersonic
+		if(mach>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = *(solver->m_Winf);
 		} else{				// subsonic
-			throw std::logic_error("subsonic condition not implemented");
+			double pElem = solver->m_element2W[iElement].P;
+			double rhoElem = solver->m_element2W[iElement].rho;
+
+			double pInf = solver->m_Winf->P;
+			double uInf = solver->m_Winf->u;
+			double vInf = solver->m_Winf->v;
+			double rhoInf = solver->m_Winf->rho;
+
+			double c0 = pow(gamma*pElem/rhoElem,0.5);
+			double rho0 = rhoElem;
+
+			solver->m_element2W[iGhostElement].P = 0.5*(pInf+pElem-c0*rho0*(nx*(uInf-uElement)+ny*(vInf-vElement)));
+			solver->m_element2W[iGhostElement].rho = rhoInf+(solver->m_element2W[iGhostElement].P-pInf)/pow(c0,2);
+			solver->m_element2W[iGhostElement].u = uInf-nx*(pInf-pElem)/(rho0*c0);
+			solver->m_element2W[iGhostElement].v = vInf-ny*(pInf-pElem)/(rho0*c0);
+			solver->m_element2W[iGhostElement].E = pElem/(solver->m_element2W[iGhostElement].rho*(gamma-1))+0.5*(pow(solver->m_element2W[iGhostElement].u,2)+pow(solver->m_element2W[iGhostElement].v,2));
+			solver->m_element2W[iGhostElement].H = solver->m_element2W[iGhostElement].E +solver->m_element2W[iGhostElement].P/solver->m_element2W[iGhostElement].rho;
+
+			Logger::getInstance()->AddLog(" subsonic inflow ",1);
+			// solver->m_element2W[iGhostElement] = *(solver->m_Winf);				
+			// throw std::logic_error("subsonic condition not implemented");
 		}
 	}
 }
@@ -201,18 +260,57 @@ void Marker::Update_wall(Mesh* mesh, Solver* solver, int index){
 	// Define face normal vector
 	nx = mesh->m_face2Normal[mesh->m_nDime*iFace+0];
 	ny = mesh->m_face2Normal[mesh->m_nDime*iFace+1];
+
+	// verification that the vector is correctly alligned --------------------------------------------
+	// // Make sur the face vector points outwards
+	// double xb, yb; // vector going from the boundary element center and one of the boundary nodes
+	// int nDime = mesh->m_nDime;
+	// // first point
+	// double xb1, yb1;
+	// int nodeb1 = mesh->m_face2Node[2*iFace]; 
+	// xb1 = mesh->m_coor[nodeb1*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	// yb1 = mesh->m_coor[nodeb1*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+	
+	// // second point
+	// double xb2, yb2;
+	// int nodeb2 = mesh->m_face2Node[2*iFace+1]; 
+	// xb2 = mesh->m_coor[nodeb2*nDime+0]-mesh->m_element2Center[iElement*nDime+0];
+	// yb2 = mesh->m_coor[nodeb2*nDime+1]-mesh->m_element2Center[iElement*nDime+1];
+
+	// xb = (xb1+xb2)/2;
+	// yb = (yb1+yb2)/2;
+
+	// double orientation = xb*nx+yb*ny;
+
+	// if(orientation > 0){						// normal should point towards ghost cell
+	// 	std::cout<<"out"<<std::endl;
+	// 	// throw std::logic_error("marker error");
+	// }	else{
+	// 	std::cout<<"in"<<std::endl;
+	// }
+	// ------------------------------------------------------------------------------------------------	
 	
 	// Define velocity in border element
 	uElement = solver->m_element2W[iElement].u;
 	vElement = solver->m_element2W[iElement].v;
 
 	// Define velocity in ghost element
-	V2 = uElement*nx+vElement*ny;
+	V2 = (uElement*nx+vElement*ny);
 	uGhost = uElement-2*V2*nx;
 	vGhost = vElement-2*V2*ny;
-
+	// if(V2 < 1-3){						// normal should point towards ghost cell
+	// 	std::cout<<"V=0"<<std::endl;
+	// 	// throw std::logic_error("marker error");
+	// }	
 	// Update ghost element
 	solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
 	solver->m_element2W[iGhostElement].u = uGhost;
 	solver->m_element2W[iGhostElement].v = vGhost;
+	
+	// std::cout << uGhost << " : " << uElement << "\n"
+	// 		  << vGhost << " : " << vElement << "\n"
+	// 		  << nx << " : " << ny << "\n"
+	// 		  << "-----------------------"<< std::endl;
+			  
+
 }

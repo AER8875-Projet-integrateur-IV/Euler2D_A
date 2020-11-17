@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(src)
 
+message(STATUS "BIN_DIR=" ${CMAKE_BINARY_DIR})
+
 # Build tests
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
