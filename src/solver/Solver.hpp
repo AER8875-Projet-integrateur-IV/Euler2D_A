@@ -65,6 +65,9 @@ public:
 	// Row scheme
     void ConvectiveFluxRoeScheme(int iFace);
 
+	// Calcul des flux aux BC
+	void BCFlux(int iFace);
+
 	// Solver itself
 	// Dot Product
 	void DotProduct(int iFace);

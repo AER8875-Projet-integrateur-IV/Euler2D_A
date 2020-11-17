@@ -83,7 +83,7 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 	{
 
 		// Reset cond limit
-		m_mesh->m_markers->Update(m_mesh, this);
+		// m_mesh->m_markers->Update(m_mesh, this);
 
 		// On doit d'abord mettre les residus a 0 pour tous les elements!! au debut de chaque iteration
 		m_element2Residuals->Reset();
@@ -107,7 +107,9 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 			Solver::DotProductBC(iFaceBC);
 
 			// Calcul du flux convectif de la face externe
-			(this->*m_scheme)(iFaceBC);
+			// (this->*m_scheme)(iFaceBC);
+			Solver::BCFlux(iFaceBC);//TODO doit modifier le if!
+
 
 			// Mise a jour des Residus de l'element (singulier!) connecte a iFaceBC
 			Solver::CalculateResidualsBC(iFaceBC);
@@ -231,12 +233,15 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 
 	// 5. Calcul de la matrice de Roe
 	// 5.01 Calul du facteur de correction de Hartens, delta
-	double a_elem1 = pow(m_inputParameters->m_Gamma * this->m_element2W[elem1].P / this->m_element2W[elem1].rho, 0.5);//Vitesse du son de l'element 1
-	double a_elem2 = pow(m_inputParameters->m_Gamma * this->m_element2W[elem2].P / this->m_element2W[elem2].rho, 0.5);//Vitesse du son de l'element 2
-	double a_avg = (a_elem1 + a_elem2) / 2;                                                                           //Moyenne de la vitesse du son
 
-	double delta = 0.1 * a_avg;  //Premier cas possible
+	double a_elem1 = pow(m_inputParameters->m_Gamma * this->m_element2W[elem1].P / this->m_element2W[elem1].rho, 0.5);//Vitesse du son de l'element 1
+	// double a_elem2 = pow(m_inputParameters->m_Gamma * this->m_element2W[elem2].P / this->m_element2W[elem2].rho, 0.5);//Vitesse du son de l'element 2
+	// double a_avg = (a_elem1 + a_elem2) / 2;                                                                           //Moyenne de la vitesse du son
+
+	// double delta = 0.1 * a_avg;  //Premier cas possible
 	//double delta = 0.1 * c_tilde;// Deuxieme cas possible, a voir lequel prendre
+
+	double delta = (1 / 15) * a_elem1;
 
 	// Pour DeltaFc1
 	double HartensCorrectionF1;
@@ -266,12 +271,12 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	double termFc234 = std::abs(V_tilde) * (rhoDelta - pDelta / pow(c_tilde, 2));
 
 	double rhoV_Fc234 = termFc234;
-	double rhouV_Fc234 = termFc234 * u_tilde + rho_tilde * (uDelta - VDelta * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0]);
-	double rhovV_Fc234 = termFc234 * v_tilde + rho_tilde * (vDelta - VDelta * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]);
-	double rhoHV_Fc234 = termFc234 * q_tilde2 / 2 + rho_tilde * (u_tilde * uDelta + v_tilde * vDelta - V_tilde * VDelta);
+	double rhouV_Fc234 = termFc234 * u_tilde + std::abs(V_tilde) * rho_tilde * (uDelta - VDelta * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0]);
+	double rhovV_Fc234 = termFc234 * v_tilde + std::abs(V_tilde) * rho_tilde * (vDelta - VDelta * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]);
+	double rhoHV_Fc234 = termFc234 * q_tilde2 / 2 + std::abs(V_tilde) * rho_tilde * (u_tilde * uDelta + v_tilde * vDelta - V_tilde * VDelta);
 
 	// 5.2 Calcul de DeltaFc5
-	double termFc5 = HartensCorrectionF5 * ((pDelta - rho_tilde * c_tilde * VDelta) / (2 * pow(c_tilde, 2)));
+	double termFc5 = HartensCorrectionF5 * ((pDelta + rho_tilde * c_tilde * VDelta) / (2 * pow(c_tilde, 2)));
 
 	double rhoV_Fc5 = termFc5;
 	double rhouV_Fc5 = termFc5 * (u_tilde + c_tilde * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0]);
@@ -290,7 +295,101 @@ void Solver::ConvectiveFluxRoeScheme(int iFace) {
 	this->m_face2Fc[iFace].v = rhovV_Fc;
 	this->m_face2Fc[iFace].H = rhoHV_Fc;
 	if(std::isnan(this->m_face2Fc[iFace].rho)){
-		int test =1;
+		int test = 1;
+	}
+}
+
+//__________________________________________________________________________
+void Solver::BCFlux(int iFace) {
+	int elem1 = m_mesh->m_face2Element[2 * iFace + 0];
+	int elem2 = m_mesh->m_face2Element[2 * iFace + 1];
+
+	// Vitesse contravariante (permet de determiner si inflow ou outflow)
+	double V = this->m_element2W[elem1].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem1].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
+
+	// Calcul du nombre de Mach de l'element 1
+	double a = pow(m_inputParameters->m_Gamma * this->m_element2W[elem1].P / this->m_element2W[elem1].rho, 0.5);
+	double vitesse = pow(pow(this->m_element2W[elem1].u, 2) + pow(this->m_element2W[elem1].v, 2), 0.5);
+	double Mach = vitesse / a;
+
+	// wall BC flux
+	if (Marker == "Wall") {//TODO change
+		// Calcul des parametres
+		double p = this->m_element2W[elem1].P;
+		double u = this->m_element2W[elem1].u - (this->m_element2W[elem1].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem1].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]) * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0];
+		double v = this->m_element2W[elem1].v - (this->m_element2W[elem1].u * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] + this->m_element2W[elem1].v * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1]) * m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1];
+		double rho = this->m_element2W[elem1].rho;
+
+		// Mettre dans le vecteur Fc
+		this->m_face2Fc[iFace].rho = 0;
+		this->m_face2Fc[iFace].u = m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * p;
+		this->m_face2Fc[iFace].v = m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * p;
+		this->m_face2Fc[iFace].H = 0;
+	}
+
+	else if (Marker == "Farfield") {//TODO change
+
+		// Traitement des cellules outflow
+		if (Mach >= 1 && V > 0) {//Supersonic Outflow
+			double p = this->m_element2W[elem1].P;
+			double u = this->m_element2W[elem1].u;
+			double v = this->m_element2W[elem1].v;
+			double rho = this->m_element2W[elem1].rho;
+
+			double E = p / ((m_inputParameters->m_Gamma - 1) * rho) + 0.5 * (pow(u, 2) + pow(v, 2));
+			double H = E + p / rho;
+
+			// Mettre dans le vecteur Fc
+			this->m_face2Fc[iFace].rho = rho * V;
+			this->m_face2Fc[iFace].u = rho * u * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * p;
+			this->m_face2Fc[iFace].v = rho * v * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * p;
+			this->m_face2Fc[iFace].H = rho * H * V;
+		} else if (Mach < 1 && V > 0) {//Subsonic Outflow
+			double p = m_Winf->P;
+			double u = this->m_element2W[elem1].u + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * (this->m_element2W[elem1].P - p) / (this->m_element2W[elem1].rho * a);
+			double v = this->m_element2W[elem1].v + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * (this->m_element2W[elem1].P - p) / (this->m_element2W[elem1].rho * a);
+			double rho = this->m_element2W[elem1].rho + (p - this->m_element2W[elem1].P) / (pow(a, 2));
+
+			double E = p / ((m_inputParameters->m_Gamma - 1) * rho) + 0.5 * (pow(u, 2) + pow(v, 2));
+			double H = E + p / rho;
+
+			// Mettre dans le vecteur Fc
+			this->m_face2Fc[iFace].rho = rho * V;
+			this->m_face2Fc[iFace].u = rho * u * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * p;
+			this->m_face2Fc[iFace].v = rho * v * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * p;
+			this->m_face2Fc[iFace].H = rho * H * V;
+		}
+
+		// Traitement des cellules inflow
+		else if (Mach >= 1 && V <= 0) {//Supersonic Inflow
+			double p = m_Winf->P;
+			double u = m_Winf->u;
+			double v = m_Winf->v;
+			double rho = m_Winf->rho;
+
+			double E = p / ((m_inputParameters->m_Gamma - 1) * rho) + 0.5 * (pow(u, 2) + pow(v, 2));
+			double H = E + p / rho;
+
+			// Mettre dans le vecteur Fc
+			this->m_face2Fc[iFace].rho = rho * V;
+			this->m_face2Fc[iFace].u = rho * u * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * p;
+			this->m_face2Fc[iFace].v = rho * v * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * p;
+			this->m_face2Fc[iFace].H = rho * H * V;
+		} else if (Mach < 1 && V <= 0) {//Subsonic Inflow
+			double p = 0.5 * (m_Winf->P + this->m_element2W[elem1].P - this->m_element2W[elem1].rho * a * (m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * (m_Winf->u - this->m_element2W[elem1].u) + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * (m_Winf->v - this->m_element2W[elem1].v)));
+			double rho = m_Winf->rho + (p - m_Winf->P) / (pow(a, 2));
+			double u = m_Winf->u - m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * (m_Winf->P - p) / (this->m_element2W[elem1].rho * a);
+			double v = m_Winf->v - m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * (m_Winf->P - p) / (this->m_element2W[elem1].rho * a);
+
+			double E = p / ((m_inputParameters->m_Gamma - 1) * rho) + 0.5 * (pow(u, 2) + pow(v, 2));
+			double H = E + p / rho;
+
+			// Mettre dans le vecteur Fc
+			this->m_face2Fc[iFace].rho = rho * V;
+			this->m_face2Fc[iFace].u = rho * u * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 0] * p;
+			this->m_face2Fc[iFace].v = rho * v * V + m_mesh->m_face2Normal[m_mesh->m_nDime * iFace + 1] * p;
+			this->m_face2Fc[iFace].H = rho * H * V;
+		}
 	}
 }
 
@@ -455,7 +554,7 @@ void Solver::UpdateW(int iElem) {
 	}
 }
 
-
+//__________________________________________________________________________
 double Solver::solveE(double p, double gamma, double rho, double u, double v, double w){
 	double E;
 	E = p/(gamma-1)/rho+0.5*(pow(u,2)+pow(v,2)+pow(w,2));
