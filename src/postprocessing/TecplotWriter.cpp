@@ -129,7 +129,7 @@ void TecplotWriter::WriteFaceConnectivity(){
             if(nElement > m_mesh->m_nElement){
                 nElement = 0; 
             }
-            m_outfile << std::to_string(nElement) << " ";        
+            m_outfile << std::to_string(nElement) << "\n";        
         } 
         m_outfile << std::endl; 
     }
