@@ -538,9 +538,6 @@ void Solver::CalculateResidualsBC(int iFace) {
 	*(m_element2Residuals->GetU(elem1)) += this->m_face2Fc[iFace].u * Area;
 	*(m_element2Residuals->GetV(elem1)) += this->m_face2Fc[iFace].v * Area;
 	*(m_element2Residuals->GetE(elem1)) += this->m_face2Fc[iFace].H * Area;
-	if(std::isnan(*(m_element2Residuals->GetRho(elem1)))){
-		int test =1;
-	}
 }
 
 //__________________________________________________________________________
@@ -549,9 +546,6 @@ void Solver::CalculateDeltaW(int iElem, double LocalTimeStep) {
 	this->m_element2DeltaW[iElem].u = -LocalTimeStep * *(m_element2Residuals->GetU(iElem)) / m_mesh->m_element2Volume[iElem];
 	this->m_element2DeltaW[iElem].v = -LocalTimeStep * *(m_element2Residuals->GetV(iElem)) / m_mesh->m_element2Volume[iElem];
 	this->m_element2DeltaW[iElem].E = -LocalTimeStep * *(m_element2Residuals->GetE(iElem)) / m_mesh->m_element2Volume[iElem];
-	if(std::isnan(m_element2DeltaW[iElem].rho)){
-		int test =1;
-	}
 }
 
 //__________________________________________________________________________
@@ -563,9 +557,6 @@ void Solver::UpdateW(int iElem) {
 	this->m_element2W[iElem].E += this->m_element2DeltaW[iElem].E / this->m_element2W[iElem].rho;
 	this->m_element2W[iElem].P = this->m_element2W[iElem].rho * (m_inputParameters->m_Gamma-1) * (this->m_element2W[iElem].E - 0.5 * (pow(this->m_element2W[iElem].u, 2) + pow(this->m_element2W[iElem].v, 2)));
 	this->m_element2W[iElem].H = this->m_element2W[iElem].E + this->m_element2W[iElem].P / this->m_element2W[iElem].rho;
-	if(std::isnan(m_element2W[iElem].rho)){
-		int test =1;
-	}
 }
 
 //__________________________________________________________________________
