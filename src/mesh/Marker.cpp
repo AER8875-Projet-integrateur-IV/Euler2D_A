@@ -193,9 +193,11 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	
 	// flow velocity
 	double gamma = solver->m_inputParameters->m_Gamma;
-	double umach = uElement/pow(gamma,0.5)*solver->m_Vref;
-	double vmach = vElement/pow(gamma,0.5)*solver->m_Vref;
-	double mach = pow((pow(umach,2)+pow(vmach,2)),0.5);
+	double P = solver->m_element2W[iElement].P*solver->m_inputParameters->m_Pressure;
+	double rho = solver->m_element2W[iElement].rho*solver->m_inputParameters->m_Density;
+	double umach = uElement;
+	double vmach = vElement;
+	double mach = pow((pow(umach,2)+pow(vmach,2)),0.5)*solver->m_Vref/pow(gamma*P/rho,0.5);
 	
 	if(orientation<0){ 		// outflow
 		if(mach>1){ 	// supersonic
@@ -219,7 +221,7 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			solver->m_element2W[iGhostElement].E = pInf/(solver->m_element2W[iGhostElement].rho*(gamma-1))+0.5*(pow(solver->m_element2W[iGhostElement].u,2)+pow(solver->m_element2W[iGhostElement].v,2));
 			solver->m_element2W[iGhostElement].H = solver->m_element2W[iGhostElement].E +solver->m_element2W[iGhostElement].P/solver->m_element2W[iGhostElement].rho;
 
-			Logger::getInstance()->AddLog(" subsonic outflow ",1);
+			// Logger::getInstance()->AddLog(" subsonic outflow ",1);
 			// throw std::logic_error("subsonic condition not implemented");
 		}
 	} else{					// inflow
@@ -244,7 +246,7 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			solver->m_element2W[iGhostElement].E = pElem/(solver->m_element2W[iGhostElement].rho*(gamma-1))+0.5*(pow(solver->m_element2W[iGhostElement].u,2)+pow(solver->m_element2W[iGhostElement].v,2));
 			solver->m_element2W[iGhostElement].H = solver->m_element2W[iGhostElement].E +solver->m_element2W[iGhostElement].P/solver->m_element2W[iGhostElement].rho;
 
-			Logger::getInstance()->AddLog(" subsonic inflow ",1);
+			// Logger::getInstance()->AddLog(" subsonic inflow ",1);
 			// solver->m_element2W[iGhostElement] = *(solver->m_Winf);				
 			// throw std::logic_error("subsonic condition not implemented");
 		}
