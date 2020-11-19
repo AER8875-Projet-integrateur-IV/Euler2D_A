@@ -9,6 +9,9 @@
 class Marker
 {
 protected:
+
+
+public:
     std::string m_tag;
     int m_nElement;
     int* m_element2Node;
@@ -27,7 +30,6 @@ protected:
     // member function used for border conditoin update
     void (Marker::*m_updateFunction)(Mesh* mesh, Solver* solver, int index);
 
-public:
     Marker();
     ~Marker();
 

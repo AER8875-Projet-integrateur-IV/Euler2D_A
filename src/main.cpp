@@ -9,7 +9,9 @@
 #include <string>
 #include "utils/logger/Logger.hpp"
 #include "mesh/metrics/MetricsGenerator.hpp"
+#include "mesh/MarkerContainer.hpp"
 #include "postprocessing/TecplotWriter.hpp"
+#include "postprocessing/Coefficient.hpp"
 #include "inputParser/InputParser.h"
 #include "solver/Solver.hpp"
 #include <chrono>
@@ -66,6 +68,14 @@ int main(int argc, char *argv[]) {
 	std::vector<std::string> options{"volume","pressure","u","v","rho","rhoRMS"};
 	TecplotWriter writer(&mesh, &solver);
 	writer.DrawMesh(inputParameters.m_outputFile, options);
+
+	// Solve coefficients
+	int* wallFaces;
+	int nWallFaces;
+	mesh.m_markers->GetWallFaces(&wallFaces, &nWallFaces);
+	Coefficient coef = Coefficient(&solver, &mesh);
+	coef.Solve(wallFaces, nWallFaces);
+
 
 	time_t timeEnd;
 	time(&timeEnd);

@@ -26,5 +26,8 @@ public:
     void FindElements(Mesh* mesh);
     int GetNElement();
     void Update(Mesh* mesh, Solver* solver);
+    
+    // gets of faceIDs for the wall condition
+    void GetWallFaces(int** Faces, int* nFace);
 };
 

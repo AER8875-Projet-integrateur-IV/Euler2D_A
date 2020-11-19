@@ -61,3 +61,13 @@ void MarkerContainer::Update(Mesh* mesh, Solver* solver){
         m_markers[iMark].Update(mesh, solver);
     }
 }
+
+void MarkerContainer::GetWallFaces(int** Faces, int* nFace){
+    for(int iMark = 0; iMark<m_nMark;iMark++){
+        if(m_markers[iMark].m_tag=="wall"){
+            *nFace = m_markers[iMark].m_nElement;
+            *Faces = m_markers[iMark].m_containingFaces;
+            break;
+        }
+    }    
+}
