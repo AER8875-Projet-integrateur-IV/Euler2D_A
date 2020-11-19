@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include "../utils/logger/Logger.hpp"
+#include <iomanip>
 
 Residual::Residual()
 {
@@ -94,11 +95,12 @@ void Residual::Write2File(std::string path){
             << "Mach : NA\n"
             << "AOA : 0\n"
             << "rho              rhoU           rhoV           rhoH\n";
+    outfile  << std::scientific << std::setprecision(12);
     for(int iIteration = 0;iIteration<m_iteration;iIteration++){
-        outfile << std::to_string(m_rhoRMS[iIteration]) << " "
-                << std::to_string(m_uRMS[iIteration]) << " "
-                << std::to_string(m_vRMS[iIteration]) << " "
-                << std::to_string(m_ERMS[iIteration]) << "\n";
+        outfile  << m_rhoRMS[iIteration] << " "
+                 << m_uRMS[iIteration] << " "
+                 << m_vRMS[iIteration] << " "
+                 << m_ERMS[iIteration] << "\n";
     }
     outfile.close();
     Logger::getInstance()->AddLog("Residuals logged in "+ path,0);
