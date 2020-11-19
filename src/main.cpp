@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 	mesh.m_markers->GetWallFaces(&wallFaces, &nWallFaces);
 	Coefficient coef = Coefficient(&solver, &mesh);
 	coef.Solve(wallFaces, nWallFaces);
-
+	coef.Write(inputParameters.m_outputPressure);
 
 	time_t timeEnd;
 	time(&timeEnd);

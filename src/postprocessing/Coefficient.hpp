@@ -24,5 +24,6 @@ public:
     ~Coefficient();
 
     void Solve(int* faces, int nFace);
+    void Write(std::string path);
 };
 

@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <fstream>
+#include <iomanip>
 
 #include "../solver/Solver.hpp"
 #include "../mesh/Mesh.hpp"
@@ -80,4 +82,25 @@ void Coefficient::Solve(int* faces, int nFace){
     }
     Logger::getInstance()->AddLog("CL = "+std::to_string(m_CL),0);
     Logger::getInstance()->AddLog("CD = "+std::to_string(m_CD),0);
+}
+
+void Coefficient::Write(std::string path){
+	std::ofstream fileStream(path);
+	fileStream << "-------------------------- PRESSURE ---------------------------\n";
+    fileStream << "Mesh file : " << m_solver->m_inputParameters->m_meshFile << "\n";
+    fileStream << "Mach : " << m_solver->m_inputParameters->m_Mach  
+               << " , AOA : " << m_solver->m_inputParameters->m_aoa <<"\n";
+    fileStream << "CL : " << m_CL 
+               << " , CD : " << m_CD << "\n";
+    
+    double cp, position;
+    for(int i=0;i<m_Cp.size();i++){
+        cp = m_Cp[i];
+        position = m_x[i];
+        fileStream << position
+			       << std::setw(18)
+			       << cp
+			       << "\n";
+    }
+    fileStream.close();
 }
