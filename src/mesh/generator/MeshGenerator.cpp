@@ -1,9 +1,11 @@
 #include "MeshGenerator.hpp"
-#include "MeshReaderSU2.hpp"
-#include "../Mesh.hpp"
 #include "../../utils/logger/Logger.hpp"
 #include "../MarkerContainer.hpp"
+#include "../Mesh.hpp"
+#include "MeshReaderSU2.hpp"
 #include <cmath>
+#include <iostream>
+#include <time.h>
 
 MeshGenerator::MeshGenerator(){
 }
@@ -237,10 +239,10 @@ void MeshGenerator::SolveFaceConnectivity(){
 										m_mesh->m_element2Face[m_mesh->m_element2ElementStart[elemj] + facej] = faceCount;
 										m_mesh->m_face2Element[2 * faceCount + 0] = elemi;
 										m_mesh->m_face2Element[2 * faceCount + 1] = elemj;
-										for (int i = 0; i < nNodesForFaceI; ++i) {
-											m_mesh->m_face2Node[m_nodeCount] = m_lhelp[i];
-											m_nodeCount += 1;
-										}
+										// for (int i = 0; i < nNodesForFaceI; ++i) {
+										// 	m_mesh->m_face2Node[m_nodeCount] = m_lhelp[i];
+										// 	m_nodeCount += 1;
+										// }
 										faceCount += 1;
 									}
 								}
@@ -369,41 +371,81 @@ void MeshGenerator::SolveFace2Element(){
 
 void MeshGenerator::SolveFace2Node(){
 	// Passage dans face2node pour mettre a jour les ghost cells
-	int countGhostcells = m_mesh->m_nElement;
-	int trouve;
-	int startI;
-	int endI;
+
+	// L'ancienne version est la suivante:
+
+	// int countGhostcells = m_mesh->m_nElement;
+	// int trouve;
+	// int startI;
+	// int endI;
+	// int nLocalFaces;
+
+	// clock_t start1,end1;
+	// double cpu_time_used1;
+
+	// start1 = clock();
+
+	// for (int elemi = 0; elemi < m_mesh->m_nElement; ++elemi) {
+	// 	startI = m_mesh->m_element2NodeStart[elemi];
+	// 	endI = m_mesh->m_element2NodeStart[elemi + 1];
+	// 	nLocalFaces = endI - startI;
+
+	// 	for (int faceI = 0; faceI < nLocalFaces; ++faceI) {// En 2D, cette ligne est vraie,
+	// 		                                               // en 3D, ce n'est pas vrai que le nombre de noeuds dun element correspond
+	// 		                                               //au nombre de faces, il faut donc penser a creer, en plus de numNodeElem,
+	// 		                                               // un vecteur qui va stocker le nombre de faces par element!!
+	// 		                                               // for (int faceI=0;faceI<numFaceElem[elemi])...
+	// 		m_lhelp[0] = m_mesh->m_element2Node[startI + faceI];
+	// 		if (faceI == nLocalFaces - 1) {
+	// 			m_lhelp[1] = m_mesh->m_element2Node[startI];
+	// 		} else {
+	// 			m_lhelp[1] = m_mesh->m_element2Node[startI + faceI + 1];
+	// 		}
+
+	// 		trouve = 0;
+	// 		for (int i = 0; i < m_longueurFace2node / 2; ++i) {
+	// 			if (m_mesh->m_face2Node[i * m_nNodesForFace] == m_lhelp[0] && m_mesh->m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[1] || m_mesh->m_face2Node[i * m_nNodesForFace] == m_lhelp[1] && m_mesh->m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[0]) {
+	// 				trouve = 1;
+	// 			}
+	// 		}
+
+	// 		if (!trouve) {
+	// 			m_mesh->m_face2Node[m_nodeCount] = m_lhelp[0];
+	// 			m_mesh->m_face2Node[m_nodeCount + 1] = m_lhelp[1];
+	// 			m_nodeCount += 2;
+	// 		}
+	// 	}
+	// }
+	// end1 = clock();
+	// cpu_time_used1 = ((double)(end1-start1))/CLOCKS_PER_SEC;
+	// printf("Temps pour SolveFace2Node = %f secondes \n",cpu_time_used1);
+
+
+	// Debut de la version 2 du code de face2Node
+	int iFace;
+	int startNode, startFace;
+	int endNode, endFace;
 	int nLocalFaces;
 
-	//int depasse=0;
-	for (int elemi = 0; elemi < m_mesh->m_nElement; ++elemi) {
-		startI = m_mesh->m_element2NodeStart[elemi];
-		endI = m_mesh->m_element2NodeStart[elemi + 1];
-		nLocalFaces = endI - startI;
+	for (int iElem = 0; iElem < m_mesh->m_nElement; iElem++) {
+		startNode = m_mesh->m_element2NodeStart[iElem];
+		endNode = m_mesh->m_element2NodeStart[iElem + 1];
+		startFace = m_mesh->m_element2FaceStart[iElem];
+		endFace = m_mesh->m_element2FaceStart[iElem + 1];
+		nLocalFaces = endNode - startNode;
 
-		for (int faceI = 0; faceI < nLocalFaces; ++faceI) {// En 2D, cette ligne est vraie,
-			                                               // en 3D, ce n'est pas vrai que le nombre de noeuds dun element correspond
-			                                               //au nombre de faces, il faut donc penser a creer, en plus de numNodeElem,
-			                                               // un vecteur qui va stocker le nombre de faces par element!!
-			                                               // for (int faceI=0;faceI<numFaceElem[elemi])...
-			m_lhelp[0] = m_mesh->m_element2Node[startI + faceI];
-			if (faceI == nLocalFaces - 1) {
-				m_lhelp[1] = m_mesh->m_element2Node[startI];
-			} else {
-				m_lhelp[1] = m_mesh->m_element2Node[startI + faceI + 1];
-			}
-
-			trouve = 0;
-			for (int i = 0; i < m_longueurFace2node / 2; ++i) {
-				if (m_mesh->m_face2Node[i * m_nNodesForFace] == m_lhelp[0] && m_mesh->m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[1] || m_mesh->m_face2Node[i * m_nNodesForFace] == m_lhelp[1] && m_mesh->m_face2Node[i * m_nNodesForFace + 1] == m_lhelp[0]) {
-					trouve = 1;
+		for (int i = 0; i < nLocalFaces; i++) {
+			iFace = m_mesh->m_element2Face[startFace + i];
+			// printf("iFace = %2d\n",iFace);
+			// printf("i = %d\n",i);
+			if (m_mesh->m_face2Node[2 * iFace + 0] == 0 && m_mesh->m_face2Node[2 * iFace + 1] == 0) {//on s'assure que les nodes ne sont pas deja la
+				if (i == nLocalFaces - 1) {
+					m_mesh->m_face2Node[2 * iFace + 0] = m_mesh->m_element2Node[startNode + i];
+					m_mesh->m_face2Node[2 * iFace + 1] = m_mesh->m_element2Node[startNode + 0];
+				} else {
+					m_mesh->m_face2Node[2 * iFace + 0] = m_mesh->m_element2Node[startNode + i];
+					m_mesh->m_face2Node[2 * iFace + 1] = m_mesh->m_element2Node[startNode + i + 1];
 				}
-			}
-
-			if (!trouve) {
-				m_mesh->m_face2Node[m_nodeCount] = m_lhelp[0];
-				m_mesh->m_face2Node[m_nodeCount + 1] = m_lhelp[1];
-				m_nodeCount += 2;
 			}
 		}
 	}

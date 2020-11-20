@@ -13,7 +13,7 @@ START
 MESH_FORMAT = SU2
 
 #Path to mesh file (from executable directory)
-MESH_FILE = ../examples/SU2/naca0012_euler_33x33x1_O_1B.su2
+MESH_FILE = ../examples/SU2/naca0012_euler_65x65x1_O_1B.su2
 
 #Type of mesh. Options : STRUCTURED | UNSTRUCTURED
 MESH_TYPE = UNSTRUCTURED

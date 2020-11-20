@@ -1,20 +1,21 @@
+#include "inputParser/InputParser.h"
+#include "mesh/MarkerContainer.hpp"
+#include "mesh/Mesh.hpp"
+#include "mesh/generator/MeshGenerator.hpp"
 #include "mesh/generator/MeshReader.hpp"
 #include "mesh/generator/MeshReaderSU2.hpp"
 #include "mesh/generator/Parser.hpp"
-#include "mesh/generator/MeshGenerator.hpp"
-#include "mesh/Mesh.hpp"
+#include "mesh/metrics/MetricsGenerator.hpp"
+#include "postprocessing/Coefficient.hpp"
+#include "postprocessing/TecplotWriter.hpp"
+#include "solver/Solver.hpp"
+#include "utils/logger/Logger.hpp"
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "utils/logger/Logger.hpp"
-#include "mesh/metrics/MetricsGenerator.hpp"
-#include "mesh/MarkerContainer.hpp"
-#include "postprocessing/TecplotWriter.hpp"
-#include "postprocessing/Coefficient.hpp"
-#include "inputParser/InputParser.h"
-#include "solver/Solver.hpp"
-#include <chrono>
+#include <time.h>
 
 void show_usage() {
 	std::cerr << "Usage: "
@@ -56,8 +57,17 @@ int main(int argc, char *argv[]) {
 	MeshReaderSU2 reader(inputParameters.m_meshFile, &mesh);
 	reader.ReadFile();
 
+	clock_t start, end;
+	double cpu_time_used;
+	start = clock();
+
 	MeshGenerator generator(&mesh);
 	generator.BuildMesh();
+
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	Logger::getInstance()->AddLog("MeshGenerator time = " + std::to_string(cpu_time_used) + " seconds\n", 1);
+
 
 	MetricsGenerator metrics(&mesh);
 	metrics.Solve();
@@ -81,7 +91,7 @@ int main(int argc, char *argv[]) {
 	time(&timeEnd);
 
 	int timeInterval = (intmax_t)timeEnd - (intmax_t)timeBeg;
-	Logger::getInstance()->AddLog("simulation time = " + std::to_string(timeInterval) + "seconds",1);
+	Logger::getInstance()->AddLog("simulation time = " + std::to_string(timeInterval) + " seconds", 1);
 
 	return 0;
 }
