@@ -7,6 +7,8 @@
 #include <stdlib.h>//pour la valeur absolue
 #include <string>
 #include <stdexcept>
+#include <sstream>
+#include <iomanip>
 
 Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 {
@@ -129,6 +131,13 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 		iteration++;
 		m_element2Residuals->solveRMS();
 		error = m_element2Residuals->MaxRMS();
+		if(iteration%1000==0){
+			std::ostringstream ss;
+			ss << std::scientific << std::setprecision(2);
+			ss << "Itération : " << double(iteration) << " | Error : " << error;
+			std::string str = ss.str();
+			Logger::getInstance()->AddLog(str, 2);
+		}
 	}
 	Logger::getInstance()->AddLog("Convergence after " + std::to_string(iteration) + " iterations.", 1);
 	m_element2Residuals->Write2File(m_inputParameters->m_outputResidual);
