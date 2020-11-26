@@ -316,3 +316,80 @@ void Marker::Update_wall(Mesh* mesh, Solver* solver, int index){
 			  
 
 }
+
+void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
+	int iGhostElement = m_ghostElement[index];
+	int iElement = m_containingElement[index];
+	int iFace = m_containingFaces[index];
+	int nDime = mesh->m_nDime;
+
+	// 1. We need the CL from the "normal" calculation, without vortex correction
+	// Solve coefficients
+	int *wallFaces;
+	int nWallFaces;
+	mesh->m_markers->GetWallFaces(&wallFaces, &nWallFaces);
+	//Coefficient coef = Coefficient(&solver, &mesh);
+	//coef.Solve(wallFaces, nWallFaces);
+	double CL;
+	//CL = ...
+
+	// 2. We need the chord length
+	double a;
+	a = 1;
+
+	// 3. We need the previous infinite values
+	double pInf = solver->m_Winf->P;
+	double uInf = solver->m_Winf->u;
+	double vInf = solver->m_Winf->v;
+	double rhoInf = solver->m_Winf->rho;
+
+	// 4. We need the geometry variables d and theta
+	double d, theta;
+
+	// first point
+	double xb1, yb1;
+	int nodeb1 = mesh->m_face2Node[2 * iFace];
+	xb1 = mesh->m_coor[nodeb1 * nDime + 0] - mesh->m_element2Center[iElement * nDime + 0];
+	yb1 = mesh->m_coor[nodeb1 * nDime + 1] - mesh->m_element2Center[iElement * nDime + 1];
+
+	// second point
+	double xb2, yb2;
+	int nodeb2 = mesh->m_face2Node[2 * iFace + 1];
+	xb2 = mesh->m_coor[nodeb2 * nDime + 0] - mesh->m_element2Center[iElement * nDime + 0];
+	yb2 = mesh->m_coor[nodeb2 * nDime + 1] - mesh->m_element2Center[iElement * nDime + 1];
+
+	// Middle point
+	double xb, yb;
+	xb = (xb1 + xb2) / 2;
+	yb = (yb1 + yb2) / 2;
+
+	// The reference point is the center of the grid (0,0)
+	double xref, yref;
+	xref = 0;// if we want 1/4 chord, needs to be changed to -0.25
+	yref = 0;
+
+	// Calculating the d and theta parameters
+	double d, theta, alpha;
+	alpha = m_inputParameters->m_aoa * m_PI / 180.0;//to be verified... neds to be in radians
+	d = pow(pow(xb - xref, 2) + pow(yb - yref, 2), 0.5);
+	theta = std::atan((yb - yref) / (xb - xref));
+
+	// 5. Computing the VORTEX
+	double velocityNorm, vortex;
+	velocityNorm = pow(pow(uInf, 2) + pow(vInf, 2), 0.5);
+	vortex = 0.5 * velocityNorm * a * CL;
+
+	// 6. Computing the new infinite velocities
+	double uInf_star, vInf_star, aInf, MachInf, gamma;
+	gamma = m_inputParameters->m_Gamma;
+	aInf = pow(gamma * pInf / rhoInf, 0.5);
+	MachInf = aInf / velocityNorm;
+	uInf_star = uInf + (vortex * pow(1 - pow(MachInf, 2), 0.5)) / (2 * M_PI * d) * (std::sin(theta)) / (1 - pow(MachInf, 2) * pow(std::sin(theta - alpha), 2));
+	vInf_star = vInf - (vortex * pow(1 - pow(MachInf, 2), 0.5)) / (2 * M_PI * d) * (std::cos(theta)) / (1 - pow(MachInf, 2) * pow(std::sin(theta - alpha), 2));
+
+	// 7. Computing the new infinite pressure and density
+	double pInf_star, rhoInf_star, velocity_starNorm;
+	velocity_starNorm = pow(uInf_star, 2) + pow(vInf_star, 2);
+	pInf_star = pow(pow(pInf, (gamma - 1) / gamma) + (gamma - 1) / gamma * rhoInf * (pow(velocityNorm, 2) - velocity_starNorm) / (2 * pow(pInf, 1 / gamma)), gamma / (gamma - 1));
+	rhoInf_star = rhoInf * pow(pInf_star / pInf, 1 / gamma);
+}
