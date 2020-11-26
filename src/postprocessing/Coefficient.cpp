@@ -80,8 +80,8 @@ void Coefficient::Solve(int* faces, int nFace){
         m_CD += m_Cp.back()*faceVectorX;
         m_CL += m_Cp.back()*faceVectorY;
     }
-    Logger::getInstance()->AddLog("CL = "+std::to_string(m_CL),0);
-    Logger::getInstance()->AddLog("CD = "+std::to_string(m_CD),0);
+	//Logger::getInstance()->AddLog("CL = "+std::to_string(m_CL),0);
+	//Logger::getInstance()->AddLog("CD = "+std::to_string(m_CD),0);
 }
 
 void Coefficient::Write(std::string path){

@@ -1,10 +1,13 @@
 #pragma once
 #define MARKER_H
 
-#include <string>
-#include <memory>
-#include "Mesh.hpp"
+#include "../inputParser/InputParser.h"
+#include "../postprocessing/Coefficient.hpp"
 #include "../solver/Solver.hpp"
+#include "Mesh.hpp"
+#include <memory>
+#include <string>
+#include <tuple>
 
 class Marker
 {
@@ -47,6 +50,6 @@ public:
     void Update_farfield(Mesh* mesh, Solver* solver, int iFace);
     void Update_wall(Mesh* mesh, Solver* solver, int iFace);
 
-	void VortexCorrection(Mesh *mesh, Solver *solver, int index);
+	std::tuple<double, double, double, double> VortexCorrection(Mesh *mesh, Solver *solver, ees2d::io::InputParser *inputParser, int index);
 };
 

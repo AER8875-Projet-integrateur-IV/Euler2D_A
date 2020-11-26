@@ -15,9 +15,6 @@ private:
     double m_c=1;     // chord length
     double m_LE=0;    // chord Leading edge position
 
-    double m_CL;
-    double m_CD;
-    double m_CM;
 
 public:
     Coefficient(Solver* solver, Mesh* mesh);
@@ -25,5 +22,9 @@ public:
 
     void Solve(int* faces, int nFace);
     void Write(std::string path);
+
+	double m_CL;
+	double m_CD;
+	double m_CM;
 };
 

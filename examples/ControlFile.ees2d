@@ -30,7 +30,7 @@ VELOCITY = 0
 MACH = 0.8
 
 angle of attack in degrees
-AOA = 0.0
+AOA = 1.25
 
 # Airflow pressure in Pa
 AIRFLOW_PRESSURE = 101325
@@ -65,7 +65,7 @@ TIME_INTEGRATION = EXPLICIT_EULER
 CFL = 0.5
 
 # Minimum residual to stop solver
-MIN_RESIDUAL = 1e-8
+MIN_RESIDUAL = 1e-6
 
 # Number of maximum iterations to stop solver
 MAX_ITER = 40000

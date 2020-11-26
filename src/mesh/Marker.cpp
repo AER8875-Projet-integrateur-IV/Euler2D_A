@@ -1,13 +1,15 @@
 #include "Marker.hpp"
-#include <string>
-#include <memory>
-#include "../utils/logger/Logger.hpp"
-#include <cmath>
-#include "Mesh.hpp"
+#include "../inputParser/InputParser.h"
+#include "../postprocessing/Coefficient.hpp"
 #include "../solver/Solver.hpp"
-#include <stdexcept>
+#include "../utils/logger/Logger.hpp"
+#include "Mesh.hpp"
+#include <cmath>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 #include <string>
+#include <tuple>
 
 Marker::Marker()
 {
@@ -198,7 +200,12 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	double umach = uElement;
 	double vmach = vElement;
 	double mach = pow((pow(umach,2)+pow(vmach,2)),0.5)*solver->m_Vref/pow(gamma*P/rho,0.5);
-	
+
+	// Vortex correction
+	std::tuple<double, double, double, double> vortexVariables;
+	vortexVariables = this->VortexCorrection(mesh, solver, solver->m_inputParameters, index);
+
+
 	if(orientation<0){ 		// outflow
 		if(mach>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
@@ -206,10 +213,10 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			double pElem = solver->m_element2W[iElement].P;
 			double rhoElem = solver->m_element2W[iElement].rho;
 
-			double pInf = solver->m_Winf->P;
-			double uInf = solver->m_Winf->u;
-			double vInf = solver->m_Winf->v;
-			double rhoInf = solver->m_Winf->rho;
+			double pInf = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double uInf = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double vInf = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoInf = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
 			double c0 = pow(gamma*pElem/rhoElem,0.5);
 			double rho0 = rhoElem;
@@ -231,10 +238,10 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			double pElem = solver->m_element2W[iElement].P;
 			double rhoElem = solver->m_element2W[iElement].rho;
 
-			double pInf = solver->m_Winf->P;
-			double uInf = solver->m_Winf->u;
-			double vInf = solver->m_Winf->v;
-			double rhoInf = solver->m_Winf->rho;
+			double pInf = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double uInf = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double vInf = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoInf = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
 			double c0 = pow(gamma*pElem/rhoElem,0.5);
 			double rho0 = rhoElem;
@@ -317,7 +324,7 @@ void Marker::Update_wall(Mesh* mesh, Solver* solver, int index){
 
 }
 
-void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
+std::tuple<double, double, double, double> Marker::VortexCorrection(Mesh *mesh, Solver *solver, ees2d::io::InputParser *inputParser, int index) {
 	int iGhostElement = m_ghostElement[index];
 	int iElement = m_containingElement[index];
 	int iFace = m_containingFaces[index];
@@ -328,12 +335,12 @@ void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
 	int *wallFaces;
 	int nWallFaces;
 	mesh->m_markers->GetWallFaces(&wallFaces, &nWallFaces);
-	//Coefficient coef = Coefficient(&solver, &mesh);
-	//coef.Solve(wallFaces, nWallFaces);
+	Coefficient coef = Coefficient(solver, mesh);
+	coef.Solve(wallFaces, nWallFaces);
 	double CL;
-	//CL = ...
+	CL = coef.m_CL;
 
-	// 2. We need the chord length
+	// 2. We need the chord length = 1
 	double a;
 	a = 1;
 
@@ -349,14 +356,14 @@ void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
 	// first point
 	double xb1, yb1;
 	int nodeb1 = mesh->m_face2Node[2 * iFace];
-	xb1 = mesh->m_coor[nodeb1 * nDime + 0] - mesh->m_element2Center[iElement * nDime + 0];
-	yb1 = mesh->m_coor[nodeb1 * nDime + 1] - mesh->m_element2Center[iElement * nDime + 1];
+	xb1 = mesh->m_coor[nodeb1 * nDime + 0];// - mesh->m_element2Center[iElement * nDime + 0];
+	yb1 = mesh->m_coor[nodeb1 * nDime + 1];// - mesh->m_element2Center[iElement * nDime + 1];
 
 	// second point
 	double xb2, yb2;
 	int nodeb2 = mesh->m_face2Node[2 * iFace + 1];
-	xb2 = mesh->m_coor[nodeb2 * nDime + 0] - mesh->m_element2Center[iElement * nDime + 0];
-	yb2 = mesh->m_coor[nodeb2 * nDime + 1] - mesh->m_element2Center[iElement * nDime + 1];
+	xb2 = mesh->m_coor[nodeb2 * nDime + 0];// - mesh->m_element2Center[iElement * nDime + 0];
+	yb2 = mesh->m_coor[nodeb2 * nDime + 1];// - mesh->m_element2Center[iElement * nDime + 1];
 
 	// Middle point
 	double xb, yb;
@@ -365,12 +372,12 @@ void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
 
 	// The reference point is the center of the grid (0,0)
 	double xref, yref;
-	xref = 0;// if we want 1/4 chord, needs to be changed to -0.25
+	xref = 0;// if we want 1/4 chord, needs to be changed to 0.25
 	yref = 0;
 
 	// Calculating the d and theta parameters
-	double d, theta, alpha;
-	alpha = m_inputParameters->m_aoa * m_PI / 180.0;//to be verified... neds to be in radians
+	double alpha;
+	alpha = inputParser->m_aoa * M_PI / 180.0;//to be verified... needs to be in radians
 	d = pow(pow(xb - xref, 2) + pow(yb - yref, 2), 0.5);
 	theta = std::atan((yb - yref) / (xb - xref));
 
@@ -381,7 +388,7 @@ void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
 
 	// 6. Computing the new infinite velocities
 	double uInf_star, vInf_star, aInf, MachInf, gamma;
-	gamma = m_inputParameters->m_Gamma;
+	gamma = inputParser->m_Gamma;
 	aInf = pow(gamma * pInf / rhoInf, 0.5);
 	MachInf = aInf / velocityNorm;
 	uInf_star = uInf + (vortex * pow(1 - pow(MachInf, 2), 0.5)) / (2 * M_PI * d) * (std::sin(theta)) / (1 - pow(MachInf, 2) * pow(std::sin(theta - alpha), 2));
@@ -392,4 +399,10 @@ void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
 	velocity_starNorm = pow(uInf_star, 2) + pow(vInf_star, 2);
 	pInf_star = pow(pow(pInf, (gamma - 1) / gamma) + (gamma - 1) / gamma * rhoInf * (pow(velocityNorm, 2) - velocity_starNorm) / (2 * pow(pInf, 1 / gamma)), gamma / (gamma - 1));
 	rhoInf_star = rhoInf * pow(pInf_star / pInf, 1 / gamma);
+
+	// 8. Return into tuple
+	std::tuple<double, double, double, double> result;
+	result = std::make_tuple(uInf_star, vInf_star, pInf_star, rhoInf_star);
+
+	return result;
 }
