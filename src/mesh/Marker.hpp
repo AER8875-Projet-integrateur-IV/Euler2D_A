@@ -46,5 +46,7 @@ public:
     void Update(Mesh* mesh, Solver* solver);
     void Update_farfield(Mesh* mesh, Solver* solver, int iFace);
     void Update_wall(Mesh* mesh, Solver* solver, int iFace);
+
+	void VortexCorrection(Mesh *mesh, Solver *solver, int index);
 };
 
