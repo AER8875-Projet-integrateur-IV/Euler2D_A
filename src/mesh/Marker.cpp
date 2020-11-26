@@ -370,7 +370,7 @@ void Marker::VortexCorrection(Mesh *mesh, Solver *solver, int index) {
 
 	// Calculating the d and theta parameters
 	double d, theta, alpha;
-	alpha = m_inputParameters->m_aoa;//to be verified
+	alpha = m_inputParameters->m_aoa * m_PI / 180.0;//to be verified... neds to be in radians
 	d = pow(pow(xb - xref, 2) + pow(yb - yref, 2), 0.5);
 	theta = std::atan((yb - yref) / (xb - xref));
 
