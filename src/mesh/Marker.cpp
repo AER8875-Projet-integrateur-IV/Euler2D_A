@@ -210,23 +210,33 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 		if(mach>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
 		} else{				// subsonic
-			double pElem = solver->m_element2W[iElement].P;
-			double rhoElem = solver->m_element2W[iElement].rho;
 
-			double pInf = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
-			double uInf = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
-			double vInf = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
-			double rhoInf = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
+			double pd = solver->m_element2W[iElement].P;
+			double rhod = solver->m_element2W[iElement].rho;
+			double ud = uElement;
+			double vd = vElement;
 
-			double c0 = pow(gamma*pElem/rhoElem,0.5);
-			double rho0 = rhoElem;
+			double pa = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double ua = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double va = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoa = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
-			solver->m_element2W[iGhostElement].P = pInf;
-			solver->m_element2W[iGhostElement].rho = rhoElem+(solver->m_element2W[iGhostElement].P-pElem)/pow(c0,2);
-			solver->m_element2W[iGhostElement].u = uElement+nx*(pElem-solver->m_element2W[iGhostElement].P)/(rho0*c0);
-			solver->m_element2W[iGhostElement].v = vElement+ny*(pElem-solver->m_element2W[iGhostElement].P)/(rho0*c0);
-			solver->m_element2W[iGhostElement].E = pInf/(solver->m_element2W[iGhostElement].rho*(gamma-1))+0.5*(pow(solver->m_element2W[iGhostElement].u,2)+pow(solver->m_element2W[iGhostElement].v,2));
-			solver->m_element2W[iGhostElement].H = solver->m_element2W[iGhostElement].E +solver->m_element2W[iGhostElement].P/solver->m_element2W[iGhostElement].rho;
+			double c0 = pow(gamma*pd/rhod,0.5);
+			double rho0 = rhod;
+			
+			double pb 	= pa;
+			double rhob = rhod	+(pb-pd)/pow(c0,2);
+			double ub	= ud	+nx*(pd-pb)/(rho0*c0);
+			double vb 	= vd	+ny*(pd-pb)/(rho0*c0);
+			double Eb 	= pb/(rhob*(gamma-1))+0.5*(pow(ub,2)+pow(vb,2));
+			double Hb 	= Eb +pb/rhob;
+			
+			solver->m_element2W[iGhostElement].P 	= pb;
+			solver->m_element2W[iGhostElement].rho 	= rhob;
+			solver->m_element2W[iGhostElement].u 	= ub;
+			solver->m_element2W[iGhostElement].v 	= vb;
+			solver->m_element2W[iGhostElement].E 	= Eb;
+			solver->m_element2W[iGhostElement].H 	= Hb;
 
 			// Logger::getInstance()->AddLog(" subsonic outflow ",1);
 			// throw std::logic_error("subsonic condition not implemented");
@@ -235,23 +245,32 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 		if(mach>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = *(solver->m_Winf);
 		} else{				// subsonic
-			double pElem = solver->m_element2W[iElement].P;
-			double rhoElem = solver->m_element2W[iElement].rho;
+			double pd = solver->m_element2W[iElement].P;
+			double rhod = solver->m_element2W[iElement].rho;
+			double ud = uElement;
+			double vd = vElement;
 
-			double pInf = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
-			double uInf = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
-			double vInf = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
-			double rhoInf = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
+			double pa = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double ua = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double va = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoa = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
-			double c0 = pow(gamma*pElem/rhoElem,0.5);
-			double rho0 = rhoElem;
+			double c0 = pow(gamma*pd/rhod,0.5);
+			double rho0 = rhod;
 
-			solver->m_element2W[iGhostElement].P = 0.5*(pInf+pElem-c0*rho0*(nx*(uInf-uElement)+ny*(vInf-vElement)));
-			solver->m_element2W[iGhostElement].rho = rhoInf+(solver->m_element2W[iGhostElement].P-pInf)/pow(c0,2);
-			solver->m_element2W[iGhostElement].u = uInf-nx*(pInf-pElem)/(rho0*c0);
-			solver->m_element2W[iGhostElement].v = vInf-ny*(pInf-pElem)/(rho0*c0);
-			solver->m_element2W[iGhostElement].E = pElem/(solver->m_element2W[iGhostElement].rho*(gamma-1))+0.5*(pow(solver->m_element2W[iGhostElement].u,2)+pow(solver->m_element2W[iGhostElement].v,2));
-			solver->m_element2W[iGhostElement].H = solver->m_element2W[iGhostElement].E +solver->m_element2W[iGhostElement].P/solver->m_element2W[iGhostElement].rho;
+			double pb 	= 0.5*(pa+pd-c0*rho0*(nx*(ua-ud)+ny*(va-vd)));
+			double rhob = rhoa+(solver->m_element2W[iGhostElement].P-pa)/pow(c0,2);
+			double ub	= ua-nx*(pa-pb)/(rho0*c0);
+			double vb 	= va-ny*(pa-pb)/(rho0*c0);
+			double Eb 	= pb/(rhob*(gamma-1))+0.5*(pow(ub,2)+pow(vb,2));
+			double Hb 	= Eb +pb/rhob;
+
+			solver->m_element2W[iGhostElement].P 	= pb;
+			solver->m_element2W[iGhostElement].rho	= rhob;
+			solver->m_element2W[iGhostElement].u	= ub;
+			solver->m_element2W[iGhostElement].v	= vb;
+			solver->m_element2W[iGhostElement].E	= Eb;
+			solver->m_element2W[iGhostElement].H	= Hb;
 
 			// Logger::getInstance()->AddLog(" subsonic inflow ",1);
 			// solver->m_element2W[iGhostElement] = *(solver->m_Winf);				
