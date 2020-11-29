@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
 	Coefficient coef = Coefficient(&solver, &mesh);
 	coef.Solve(wallFaces, nWallFaces);
 	coef.Write(inputParameters.m_outputPressure);
+	Logger::getInstance()->AddLog("CL = " + std::to_string(coef.m_CL) + "| CD = " + std::to_string(coef.m_CD), 1);
 
 	time_t timeEnd;
 	time(&timeEnd);
