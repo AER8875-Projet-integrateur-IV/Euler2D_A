@@ -216,10 +216,10 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			double ud = uElement;
 			double vd = vElement;
 
-			double pa = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
-			double ua = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
-			double va = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
-			double rhoa = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
+			double pa 	= std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double ua 	= std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double va 	= std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoa = std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
 			double c0 = pow(gamma*pd/rhod,0.5);
 			double rho0 = rhod;
@@ -250,10 +250,10 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			double ud = uElement;
 			double vd = vElement;
 
-			double pa = solver->m_Winf->P;    //std::get<2>(vortexVariables);//solver->m_Winf->P;
-			double ua = solver->m_Winf->u;    //std::get<0>(vortexVariables);//solver->m_Winf->u;
-			double va = solver->m_Winf->v;    //std::get<1>(vortexVariables);//solver->m_Winf->v;
-			double rhoa = solver->m_Winf->rho;//std::get<3>(vortexVariables);//solver->m_Winf->rho;
+			double pa 	= std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double ua 	= std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double va 	= std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoa = std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
 			double c0 = pow(gamma*pd/rhod,0.5);
 			double rho0 = rhod;
@@ -344,10 +344,10 @@ void Marker::Update_wall(Mesh* mesh, Solver* solver, int index){
 }
 
 std::tuple<double, double, double, double> Marker::VortexCorrection(Mesh *mesh, Solver *solver, ees2d::io::InputParser *inputParser, int index) {
-	int iGhostElement = m_ghostElement[index];
-	int iElement = m_containingElement[index];
-	int iFace = m_containingFaces[index];
-	int nDime = mesh->m_nDime;
+	int iGhostElement 	= m_ghostElement[index];
+	int iElement 		= m_containingElement[index];
+	int iFace 			= m_containingFaces[index];
+	int nDime 			= mesh->m_nDime;
 
 	// 1. We need the CL from the "normal" calculation, without vortex correction
 	// Solve coefficients
@@ -364,9 +364,9 @@ std::tuple<double, double, double, double> Marker::VortexCorrection(Mesh *mesh, 
 	a = 1;
 
 	// 3. We need the previous infinite values
-	double pInf = solver->m_Winf->P;
-	double uInf = solver->m_Winf->u;
-	double vInf = solver->m_Winf->v;
+	double pInf = 	solver->m_Winf->P;
+	double uInf = 	solver->m_Winf->u;
+	double vInf = 	solver->m_Winf->v;
 	double rhoInf = solver->m_Winf->rho;
 
 	// 4. We need the geometry variables d and theta
@@ -391,8 +391,8 @@ std::tuple<double, double, double, double> Marker::VortexCorrection(Mesh *mesh, 
 
 	// The reference point is the center of the grid (0,0)
 	double xref, yref;
-	xref = 0;// if we want 1/4 chord, needs to be changed to 0.25
-	yref = 0;
+	xref = 0.25;// if we want 1/4 chord, needs to be changed to 0.25
+	yref = 0.25;
 
 	// Calculating the d and theta parameters
 	double alpha;
@@ -408,10 +408,12 @@ std::tuple<double, double, double, double> Marker::VortexCorrection(Mesh *mesh, 
 	// 6. Computing the new infinite velocities
 	double uInf_star, vInf_star, aInf, MachInf, gamma;
 	gamma = inputParser->m_Gamma;
-	aInf = pow(gamma * pInf / rhoInf, 0.5);
-	MachInf = aInf / velocityNorm;
-	uInf_star = uInf + (vortex * pow(1 - pow(MachInf, 2), 0.5)) / (2 * M_PI * d) * (std::sin(theta)) / (1 - pow(MachInf, 2) * pow(std::sin(theta - alpha), 2));
-	vInf_star = vInf - (vortex * pow(1 - pow(MachInf, 2), 0.5)) / (2 * M_PI * d) * (std::cos(theta)) / (1 - pow(MachInf, 2) * pow(std::sin(theta - alpha), 2));
+	// aInf = pow(gamma * pInf / rhoInf, 0.5);
+	double P = solver->m_element2W[iElement].P*solver->m_inputParameters->m_Pressure;
+	double rho = solver->m_element2W[iElement].rho*solver->m_inputParameters->m_Density;
+	MachInf = velocityNorm*solver->m_Vref/pow(gamma*P/rho,0.5);
+	uInf_star = uInf + (vortex * pow(1 - pow(MachInf, 2), 0.5) / (2 * M_PI * d) * (std::sin(theta)) / (1 - pow(MachInf, 2) * pow(std::sin(theta - alpha), 2)));
+	vInf_star = vInf - (vortex * pow(1 - pow(MachInf, 2), 0.5) / (2 * M_PI * d) * (std::cos(theta)) / (1 - pow(MachInf, 2) * pow(std::sin(theta - alpha), 2)));
 
 	// 7. Computing the new infinite pressure and density
 	double pInf_star, rhoInf_star, velocity_starNorm;
