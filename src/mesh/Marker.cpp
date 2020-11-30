@@ -216,10 +216,10 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			double ud = uElement;
 			double vd = vElement;
 
-			double pa 	= std::get<2>(vortexVariables);//solver->m_Winf->P;
-			double ua 	= std::get<0>(vortexVariables);//solver->m_Winf->u;
-			double va 	= std::get<1>(vortexVariables);//solver->m_Winf->v;
-			double rhoa = std::get<3>(vortexVariables);//solver->m_Winf->rho;
+			double pa 	= solver->m_Winf->P;	//std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double ua 	= solver->m_Winf->u;	//std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double va 	= solver->m_Winf->v;	//std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoa = solver->m_Winf->rho;	//std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
 			double c0 = pow(gamma*pd/rhod,0.5);
 			double rho0 = rhod;
@@ -250,10 +250,10 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 			double ud = uElement;
 			double vd = vElement;
 
-			double pa 	= std::get<2>(vortexVariables);//solver->m_Winf->P;
-			double ua 	= std::get<0>(vortexVariables);//solver->m_Winf->u;
-			double va 	= std::get<1>(vortexVariables);//solver->m_Winf->v;
-			double rhoa = std::get<3>(vortexVariables);//solver->m_Winf->rho;
+			double pa 	= solver->m_Winf->P;	//std::get<2>(vortexVariables);//solver->m_Winf->P;
+			double ua 	= solver->m_Winf->u;	//std::get<0>(vortexVariables);//solver->m_Winf->u;
+			double va 	= solver->m_Winf->v;	//std::get<1>(vortexVariables);//solver->m_Winf->v;
+			double rhoa = solver->m_Winf->rho;	//std::get<3>(vortexVariables);//solver->m_Winf->rho;
 
 			double c0 = pow(gamma*pd/rhod,0.5);
 			double rho0 = rhod;

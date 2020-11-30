@@ -79,7 +79,8 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 
 
 	Logger::getInstance()->AddLog("________________________Iterative Process Start_______________________", 1);
-	float error = 1000;
+	double lastError  = 1000;
+	double error = 1000;
 	int iteration = 0;
 	while (error>m_inputParameters->m_minResiudal && iteration<m_inputParameters->m_maxIter)
 	{
@@ -137,6 +138,12 @@ Solver::Solver(Mesh* mesh, ees2d::io::InputParser* IC)
 			ss << "Itération : " << double(iteration) << " | Error : " << error;
 			std::string str = ss.str();
 			Logger::getInstance()->AddLog(str, 2);
+			
+			double relConv = std::abs(error-lastError)/error;
+			if(relConv<1e-4){
+				break;
+			}
+			lastError=error;
 		}
 	}
 	Logger::getInstance()->AddLog("Convergence after " + std::to_string(iteration) + " iterations.", 1);
