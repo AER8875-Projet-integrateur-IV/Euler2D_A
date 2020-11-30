@@ -206,7 +206,7 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	// vortexVariables = this->VortexCorrection(mesh, solver, solver->m_inputParameters, index);
 
 
-	if(orientation<0){ 		// outflow
+	if(orientation>0){ 		// outflow
 		if(mach>1){ 	// supersonic
 			solver->m_element2W[iGhostElement] = solver->m_element2W[iElement];
 		} else{				// subsonic
