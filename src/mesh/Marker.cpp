@@ -202,8 +202,8 @@ void Marker::Update_farfield(Mesh* mesh, Solver* solver, int index){
 	double mach = pow((pow(umach,2)+pow(vmach,2)),0.5)*solver->m_Vref/pow(gamma*P/rho,0.5);
 
 	// Vortex correction
-	std::tuple<double, double, double, double> vortexVariables;
-	vortexVariables = this->VortexCorrection(mesh, solver, solver->m_inputParameters, index);
+	// std::tuple<double, double, double, double> vortexVariables;
+	// vortexVariables = this->VortexCorrection(mesh, solver, solver->m_inputParameters, index);
 
 
 	if(orientation<0){ 		// outflow
