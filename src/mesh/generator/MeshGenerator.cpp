@@ -145,7 +145,8 @@ void MeshGenerator::SolveFaceConnectivity(){
 	// On doit d'abord calculer la longueur de cette liste
 	// La longueur de la liste correspond a la somme du nombre de noeuds par face
 	// Dans l'exemple presente dans le manuel, le nombre de noeuds par face est 2 pour chacune des faces (le cas pour tous les maillages 2D)
-	int numNodePerFace[m_mesh->m_nFace];// Idealement cet array est une sortie de MeshReader
+	Logger::getInstance()->AddLog("flag0\n\n",2);	
+	int* numNodePerFace = new int[m_mesh->m_nFace];// Idealement cet array est une sortie de MeshReader
 	m_longueurFace2node = 0;
 	for (int i = 0; i < m_mesh->m_nFace; ++i) {
 		numNodePerFace[i] = 2;
@@ -153,10 +154,14 @@ void MeshGenerator::SolveFaceConnectivity(){
 	}
 	// Initializing the face2node linked list to
 	m_mesh->m_face2Node =new int[m_longueurFace2node];
-
+	Logger::getInstance()->AddLog("flag1\n\n",2);
 	// Array to save information to speedup the process
 	m_lhelp = std::unique_ptr<int[]>(new int[m_nNodesForFace]());
-	int lpoint[m_mesh->m_nNode] = {0};
+	Logger::getInstance()->AddLog("flag2\n\n",2);
+	int* lpoint = new int[m_mesh->m_nNode];
+	Logger::getInstance()->AddLog("flag3\n\n",2);
+	std::fill_n(lpoint, m_mesh->m_nNode, 0);
+	Logger::getInstance()->AddLog("flag4\n\n",2);	
 	int ipoint;
 	int elemStart;
 	int elemEnd;
@@ -255,7 +260,7 @@ void MeshGenerator::SolveFaceConnectivity(){
 			for (int i = 0; i < nNodesForFaceI; ++i) {
 				lpoint[m_lhelp[i]] = 0;
 			}
-		}
+		}	
 	}
 
 	// Parcours de esuel pour calculer le nombre d'elements au total
@@ -294,7 +299,11 @@ void MeshGenerator::SolveFaceConnectivity(){
 	// printf("\n");
 
 	//nBondFaces = m_mesh->m_nFace - m_mesh->m_nFaceInt;
-
+	Logger::getInstance()->AddLog("flag5\n\n",2);
+	delete[] numNodePerFace;
+	Logger::getInstance()->AddLog("flag6\n\n",2);
+	delete[] lpoint;
+	Logger::getInstance()->AddLog("flag7\n\n",2);
 }
 
 void MeshGenerator::SolveFace2Element(){

@@ -8,6 +8,12 @@ $ cd build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ..
 $ make
 
+or
+
+$ cd build
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+$ make
+
 executable is found in build/src
 example running command:
 $ src/Euler2D_A ../examples/ControlFile.ees2d -vv

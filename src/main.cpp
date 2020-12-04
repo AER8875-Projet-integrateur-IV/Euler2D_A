@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <array>
 
 void show_usage() {
 	std::cerr << "Usage: "
@@ -47,7 +48,7 @@ int main(int argc, char *argv[]) {
 	}
 	time_t timeBeg;
 	time(&timeBeg);
-
+	// Logger::getInstance()->AddLog(std::to_string(std::array::max_size())+"\n", 1);
 	ees2d::io::InputParser inputParameters{inpath};
 	inputParameters.parse();
 	inputParameters.printAll();
